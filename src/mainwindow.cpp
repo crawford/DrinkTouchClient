@@ -19,6 +19,7 @@
 #define CONFIG_DEFAULT_PORT 4242
 #define STAT_MESSAGE       "STAT\n"
 #define PERFERRED_ROWS     6.0
+#define FONT_SIZE          20
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
@@ -38,7 +39,7 @@ void MainWindow::setupUi() {
     sbrStatus = new QStatusBar(this);
     prgLoading = new QProgressBar(this);
 
-    sbrStatus->addPermanentWidget(prgLoading);
+    sbrStatus->addWidget(prgLoading);
 
     setCentralWidget(tabCentral);
     setStatusBar(sbrStatus);
@@ -55,8 +56,10 @@ void MainWindow::buildTabs(QSettings *settings) {
         if (settings->value(tab + CONFIG_TYPE_SUB, "").toString().toLower() == CONFIG_WEB_TAG) {
             QWebView *webview = new QWebView(this);
 
-            webview->connect(webview, SIGNAL(loadProgress(int)), prgLoading, SLOT(setValue(int)));
-            webview->connect(webview->page()->networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*)));
+            connect(webview, SIGNAL(loadProgress(int)), prgLoading, SLOT(setValue(int)));
+            connect(webview->page()->networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*)));
+            connect(webview, SIGNAL(loadFinished(bool)), prgLoading, SLOT(setHidden(bool)));
+            connect(webview, SIGNAL(loadStarted()), prgLoading, SLOT(show()));
 
             webview->load(QUrl(settings->value(tab + CONFIG_ADDRESS_SUB, "http://csh.rit.edu").toString()));
             sbrStatus->showMessage(webview->url().toString());
@@ -150,13 +153,15 @@ void MainWindow::parseStats(QWidget *panel, QSslSocket *socket) {
         line.remove(0, line.indexOf(' ') + 1);
         count = line.mid(0, line.indexOf(' '));
 
-        icon = QPixmap(":/Products/images/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
+        icon = QPixmap("logos/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
         if(icon.isNull()) {
-            icon = QPixmap(":/Products/images/default.png");
+            icon = QPixmap("logos/default.png");
         }
 
         ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), this);
-        button->setIconSize(QSize(48, 30));
+        QFont font = button->font();
+        font.setPixelSize(FONT_SIZE);
+        button->setFont(font);
         if(count == "0" || price.toInt() > 100) {
             button->setEnabled(false);
         }

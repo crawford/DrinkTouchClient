@@ -2,6 +2,8 @@
 #include <QStylePainter>
 #include <QStyleOptionButton>
 
+#define EDGE_MARGIN 20
+
 ItemButton::ItemButton(QWidget *parent) : QAbstractButton(parent) {
     description = "";
     price = "";
@@ -21,7 +23,7 @@ ItemButton::ItemButton(QString nTitle, QString nDescription, QString nPrice, QIc
     setIcon(nIcon);
     marked = false;
 
-    setContentsMargins(9, 9, 9, 9);
+    setContentsMargins(13, 13, 13, 13);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setMinimumHeight(getMinSize());
 }
@@ -85,16 +87,25 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     //Draw button
     p.drawControl(QStyle::CE_PushButtonBevel, option);
 
+    int h = height() - EDGE_MARGIN;
+    //setIconSize(QSize(size, size));
+    QSize size = icon().availableSizes().first();
+    size.scale(h, h, Qt::KeepAspectRatio);
+    setIconSize(size);
+
+    int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
+
     //Draw icon
     if(isEnabled())
-        p.drawPixmap(margins.left(), (margins.height() - iconSize().height())/2 + margins.top(), icon().pixmap(iconSize(), QIcon::Normal));
+        p.drawPixmap(margins.left() + (iconWidth - iconSize().width())/2, (margins.height() - iconSize().height())/2 + margins.top(), icon().pixmap(iconSize(), QIcon::Normal));
     else
-        p.drawPixmap(margins.left(), (margins.height() - iconSize().height())/2 + margins.top(), icon().pixmap(iconSize(), QIcon::Disabled));
+        p.drawPixmap(margins.left() + (iconWidth - iconSize().width())/2, (margins.height() - iconSize().height())/2 + margins.top(), icon().pixmap(iconSize(), QIcon::Disabled));
 
     //Draw title text
     textHeight = fontMetrics.boundingRect(text()).height();
     textWidth = fontMetrics.boundingRect(text()).width();
-    p.drawText(QRect(margins.left()*2 + iconSize().width(), margins.top(), margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, text());
+
+    p.drawText(QRect(margins.left()*2 + iconWidth, margins.top(), margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, text());
 
     //Draw price text
     p.drawText(QRect(margins.right() - priceWidth, margins.top(), priceWidth, margins.height()), Qt::AlignRight|Qt::TextSingleLine|Qt::AlignVCenter, price);
@@ -109,6 +120,6 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     fontMetrics = QFontMetrics(p.font());
     textHeight = fontMetrics.boundingRect(description).height();
     textWidth = fontMetrics.boundingRect(description).width();
-    p.drawText(QRect(margins.left()*2 + iconSize().width(), margins.bottom() - textHeight, margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, description);
+    p.drawText(QRect(margins.left()*2 + iconWidth, margins.bottom() - textHeight, margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, description);
 }
 
