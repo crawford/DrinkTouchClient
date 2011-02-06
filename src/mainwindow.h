@@ -4,6 +4,8 @@
 #include <QtGui/QMainWindow>
 #include <QSettings>
 #include <QProgressBar>
+#include <QMap>
+#include <QTcpSocket>
 
 namespace Ui {
 	class mainWindow;
@@ -21,8 +23,11 @@ private:
 	QStatusBar *sbrStatus;
 	QProgressBar *prgLoading;
 
+	QMap<QString, QTcpSocket *> *connections;
+
 	void setupUi();
 	void buildTabs(QSettings *);
+	void createConnections(QSettings *);
 };
 
 #endif // MAINWINDOW_H

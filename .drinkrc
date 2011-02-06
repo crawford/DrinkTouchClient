@@ -1,11 +1,13 @@
 [Drink]
  Type=Drink
  Address=http://d.csh.rit.edu
+ Port=4242
 
 [Snack]
  Type=Drink
  Address=http://s.csh.rit.edu
+ Port=4242
 
 [Rideboard]
  Type=Web
- Address=http://members.csh.rit.edu/~mcg1sean/rideboard
+ Address=http://google.com
