@@ -8,10 +8,10 @@
  Address=s.csh.rit.edu
  Port=4242
 
-[Little Drink]
- Type=Drink
- Address=ld.csh.rit.edu
- Port=4242
+#[Little Drink]
+# Type=Drink
+# Address=ld.csh.rit.edu
+# Port=4242
 
 [Rideboard]
  Type=Web

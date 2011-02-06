@@ -1,6 +1,6 @@
 #include <QApplication>
 #include <QMessageBox>
-#include <QBoxLayout>
+#include <QStackedLayout>
 #include <QWebView>
 #include <QLabel>
 #include <QDebug>
@@ -20,6 +20,10 @@
 #define STAT_MESSAGE       "STAT\n"
 #define PERFERRED_ROWS     6.0
 #define FONT_SIZE          20
+#define SPLASH_INDEX       0
+#define SERVICES_INDEX     1
+#define PROP_TYPE          "dr_type"
+#define PROP_DEFAULT_URL   "dr_url"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
@@ -27,7 +31,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi();
     buildTabs(config);
     createConnections(config);
-    refreshStats();
 }
 
 MainWindow::~MainWindow() {
@@ -35,13 +38,38 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupUi() {
-    tabCentral = new QTabWidget(this);
-    sbrStatus = new QStatusBar(this);
-    prgLoading = new QProgressBar(this);
+    wgtCentral = new QWidget(this);
+    wgtSplash = new QWidget(wgtCentral);
+    tabServices = new QTabWidget(wgtCentral);
+    sbrStatus = new QStatusBar(wgtCentral);
+    prgLoading = new QProgressBar(wgtCentral);
+    btnLogout = new QPushButton("Logout", tabServices);
+
+    setObjectName("mainWindow");
+    wgtCentral->setObjectName("wgtCentral");
+    wgtSplash->setObjectName("wgtSplash");
+    tabServices->setObjectName("tabCentral");
+    sbrStatus->setObjectName("sbrStatus");
+    prgLoading->setObjectName("prgLoading");
+    btnLogout->setObjectName("btnLogout");
 
     sbrStatus->addWidget(prgLoading);
+    prgLoading->hide();
 
-    setCentralWidget(tabCentral);
+    wgtSplash->setLayout(new QBoxLayout(QBoxLayout::LeftToRight, wgtSplash));
+    wgtSplash->layout()->addWidget(new QLabel("Touch iButton to continue...", wgtSplash));
+    QPushButton *button = new QPushButton("iButton", wgtSplash);
+    connect(button, SIGNAL(clicked()), this, SLOT(handleIButton()));
+    wgtSplash->layout()->addWidget(button);
+
+    tabServices->setCornerWidget(btnLogout);
+    connect(btnLogout, SIGNAL(clicked()), this, SLOT(logout()));
+
+    wgtCentral->setLayout(new QStackedLayout(wgtCentral));
+    ((QStackedLayout *)(wgtCentral->layout()))->insertWidget(SPLASH_INDEX, wgtSplash);
+    ((QStackedLayout *)(wgtCentral->layout()))->insertWidget(SERVICES_INDEX, tabServices);
+
+    setCentralWidget(wgtCentral);
     setStatusBar(sbrStatus);
 
     resize(1024, 768);
@@ -54,28 +82,48 @@ void MainWindow::buildTabs(QSettings *settings) {
     foreach(QString tab, tabs) {
         qDebug() << "Creating " << tab;
         if (settings->value(tab + CONFIG_TYPE_SUB, "").toString().toLower() == CONFIG_WEB_TAG) {
-            QWebView *webview = new QWebView(this);
+            QWebView *webview = new QWebView(tabServices);
+            webview->setProperty(PROP_TYPE, CONFIG_WEB_TAG);
 
             connect(webview, SIGNAL(loadProgress(int)), prgLoading, SLOT(setValue(int)));
             connect(webview->page()->networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*)));
             connect(webview, SIGNAL(loadFinished(bool)), prgLoading, SLOT(setHidden(bool)));
             connect(webview, SIGNAL(loadStarted()), prgLoading, SLOT(show()));
 
-            webview->load(QUrl(settings->value(tab + CONFIG_ADDRESS_SUB, "http://csh.rit.edu").toString()));
-            sbrStatus->showMessage(webview->url().toString());
+            webview->setProperty(PROP_DEFAULT_URL, QUrl(settings->value(tab + CONFIG_ADDRESS_SUB, "http://csh.rit.edu").toString()));
 
-            tabCentral->addTab(webview, tab);
+            panels->insert(tab, webview);
+            tabServices->addTab(webview, tab);
         } else if(settings->value(tab + CONFIG_TYPE_SUB, "").toString().toLower() == CONFIG_DRINK_TAG) {
-            QWidget *panel = new QWidget(this);
-            panel->setLayout(new QGridLayout(this));
+            QWidget *panel = new QWidget(tabServices);
+            panel->setProperty(PROP_TYPE, CONFIG_DRINK_TAG);
+
+            panel->setLayout(new QGridLayout(panel));
             panels->insert(tab, panel);
-            tabCentral->addTab(panel, tab);
+            tabServices->addTab(panel, tab);
         }
     }
 }
 
 void MainWindow::handleSslErrors(QNetworkReply *reply) {
     reply->ignoreSslErrors();
+}
+
+void MainWindow::handleIButton() {
+    refreshStats();
+
+    foreach(QWidget *panel, panels->values()) {
+        if(panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {
+            ((QWebView *)(panel))->load(panel->property(PROP_DEFAULT_URL).toUrl());
+        }
+    }
+
+    tabServices->setCurrentIndex(0);
+    ((QStackedLayout *)(wgtCentral->layout()))->setCurrentIndex(SERVICES_INDEX);
+}
+
+void MainWindow::logout() {
+    ((QStackedLayout *)(wgtCentral->layout()))->setCurrentIndex(SPLASH_INDEX);
 }
 
 void MainWindow::createConnections(QSettings *settings) {

@@ -8,6 +8,7 @@
 #include <QSslSocket>
 #include <QNetworkReply>
 #include <QByteArray>
+#include <QPushButton>
 
 namespace Ui {
 	class mainWindow;
@@ -21,9 +22,12 @@ public:
     ~MainWindow();
 
 private:
-	QTabWidget *tabCentral;
+        QTabWidget *tabServices;
 	QStatusBar *sbrStatus;
 	QProgressBar *prgLoading;
+        QWidget *wgtCentral;
+        QWidget *wgtSplash;
+        QPushButton *btnLogout;
 
         QMap<QString, QSslSocket *> *connections;
         QMap<QString, QWidget *> *panels;
@@ -37,6 +41,8 @@ private:
 
  private slots:
         void handleSslErrors(QNetworkReply *);
+        void handleIButton();
+        void logout();
 };
 
 #endif // MAINWINDOW_H
