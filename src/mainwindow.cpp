@@ -167,7 +167,7 @@ void MainWindow::parseStats(QWidget *panel, QSslSocket *socket) {
         }
 
         connect(button, SIGNAL(clicked()), button, SLOT(mark()));
-        connect(button, SIGNAL(clicked()), this, SLOT(processClick()));
+        //connect(button, SIGNAL(clicked()), this, SLOT(processClick()));
 
         buttons.append(button);
 

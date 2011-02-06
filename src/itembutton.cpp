@@ -2,6 +2,8 @@
 #include <QStylePainter>
 #include <QStyleOptionButton>
 
+#include <QDebug>
+
 #define EDGE_MARGIN 20
 
 ItemButton::ItemButton(QWidget *parent) : QAbstractButton(parent) {
@@ -105,15 +107,23 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     textHeight = fontMetrics.boundingRect(text()).height();
     textWidth = fontMetrics.boundingRect(text()).width();
 
+    if (textWidth > margins.width() - iconWidth - margins.left()) {
+        QFont font = p.font();
+        font.setPixelSize((double)font.pixelSize() * (margins.width() - iconWidth - margins.left()) / textWidth);
+        p.setFont(font);
+    }
+
     p.drawText(QRect(margins.left()*2 + iconWidth, margins.top(), margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, text());
+
+    p.setFont(this->font());
 
     //Draw price text
     p.drawText(QRect(margins.right() - priceWidth, margins.top(), priceWidth, margins.height()), Qt::AlignRight|Qt::TextSingleLine|Qt::AlignVCenter, price);
 
     //Resize font
     QFont font = p.font();
-    //font.setPixelSize((int)(font.pixelSize() * 0.75));
-    font.setPointSizeF((font.pointSizeF() * 0.75));
+    font.setPixelSize((int)(font.pixelSize() * 0.75));
+    //font.setPointSizeF((font.pointSizeF() * 0.75));
     p.setFont(font);
 
     //Draw description text
