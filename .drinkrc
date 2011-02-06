@@ -1,0 +1,11 @@
+[Drink]
+ Type=Drink
+ Address=http://d.csh.rit.edu
+
+[Snack]
+ Type=Drink
+ Address=http://s.csh.rit.edu
+
+[Rideboard]
+ Type=Web
+ Address=http://members.csh.rit.edu/~mcg1sean/rideboard
