@@ -1,10 +1,13 @@
+#include <QApplication>
 #include <QMessageBox>
 #include <QBoxLayout>
 #include <QWebView>
 #include <QLabel>
 #include <QDebug>
+#include <QStatusBar>
+#include <QSslConfiguration>
+#include <QFile>
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 #define CONFIG_WEB_TAG     "web"
 #define CONFIG_DRINK_TAG   "drink"
@@ -46,15 +49,21 @@ void MainWindow::buildTabs(QSettings *settings) {
 		if (settings->value(tab + CONFIG_TYPE_SUB, "").toString().toLower() == CONFIG_WEB_TAG) {
 			QWebView *webview = new QWebView(this);
 
-			/*webview->connect(webview, SIGNAL(loadProgress(int)), prgLoading, SLOT(setValue(int)));
+                        webview->connect(webview, SIGNAL(loadProgress(int)), prgLoading, SLOT(setValue(int)));
+                        webview->connect(webview->page()->networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*)));
+
 			webview->load(QUrl(settings->value(tab + CONFIG_ADDRESS_SUB, "http://csh.rit.edu").toString()));
 			sbrStatus->showMessage(webview->url().toString());
 
-			tabCentral->addTab(webview, tab);*/
+                        tabCentral->addTab(webview, tab);
 		} else if(settings->value(tab + CONFIG_TYPE_SUB, "").toString().toLower() == CONFIG_DRINK_TAG) {
 			tabCentral->addTab(new QLabel("DRINK", this), tab);
 		}
 	}
+}
+
+void MainWindow::handleSslErrors(QNetworkReply *reply) {
+    reply->ignoreSslErrors();
 }
 
 void MainWindow::createConnections(QSettings *settings) {

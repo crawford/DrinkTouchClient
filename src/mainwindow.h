@@ -1,11 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include <QSettings>
 #include <QProgressBar>
 #include <QMap>
 #include <QTcpSocket>
+#include <QNetworkReply>
 
 namespace Ui {
 	class mainWindow;
@@ -28,6 +29,9 @@ private:
 	void setupUi();
 	void buildTabs(QSettings *);
 	void createConnections(QSettings *);
+
+ private slots:
+        void handleSslErrors(QNetworkReply *);
 };
 
 #endif // MAINWINDOW_H
