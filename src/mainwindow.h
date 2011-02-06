@@ -5,8 +5,9 @@
 #include <QSettings>
 #include <QProgressBar>
 #include <QMap>
-#include <QTcpSocket>
+#include <QSslSocket>
 #include <QNetworkReply>
+#include <QByteArray>
 
 namespace Ui {
 	class mainWindow;
@@ -24,11 +25,15 @@ private:
 	QStatusBar *sbrStatus;
 	QProgressBar *prgLoading;
 
-	QMap<QString, QTcpSocket *> *connections;
+        QMap<QString, QSslSocket *> *connections;
+        QMap<QString, QWidget *> *panels;
 
 	void setupUi();
 	void buildTabs(QSettings *);
 	void createConnections(QSettings *);
+        QByteArray waitForResponse(QSslSocket *);
+        void refreshStats();
+        void parseStats(QWidget *, QSslSocket *);
 
  private slots:
         void handleSslErrors(QNetworkReply *);

@@ -18,6 +18,8 @@ CONFIG += qt \
 		release
 
 SOURCES += src/main.cpp\
-        src/mainwindow.cpp
+        src/mainwindow.cpp \
+    src/itembutton.cpp
 
-HEADERS  += src/mainwindow.h
+HEADERS  += src/mainwindow.h \
+    src/itembutton.h

@@ -1,11 +1,16 @@
 [Drink]
  Type=Drink
- Address=http://d.csh.rit.edu
+ Address=d.csh.rit.edu
  Port=4242
 
 [Snack]
  Type=Drink
- Address=http://s.csh.rit.edu
+ Address=s.csh.rit.edu
+ Port=4242
+
+[Little Drink]
+ Type=Drink
+ Address=ld.csh.rit.edu
  Port=4242
 
 [Rideboard]
