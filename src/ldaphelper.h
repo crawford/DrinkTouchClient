@@ -6,18 +6,20 @@
 
 class LdapHelper {
 public:
-    LdapHelper(QString, QString, QString, int = LDAPS_PORT);
+    LdapHelper(QString, QString, QString);
     ~LdapHelper();
 
     bool connect();
     void disconnect();
+    QString getUserFromIButton(QString);
+    QString getLastError();
 
 private:
     LDAP *ld;
     QString address;
     QString userDN;
     QString password;
-    int port;
+    QString errString;
     bool connected;
 };
 

@@ -2,9 +2,8 @@
 #include <QMessageBox>
 #include <QDebug>
 
-LdapHelper::LdapHelper(QString userDN, QString password, QString address, int port) {
+LdapHelper::LdapHelper(QString userDN, QString password, QString address) {
     this->address = address;
-    this->port = port;
     this->connected = false;
     this->userDN = userDN;
     this->password = password;
@@ -17,7 +16,6 @@ LdapHelper::~LdapHelper() {
 }
 
 bool LdapHelper::connect() {
-    //QString connectionString = QString("%1:%2").arg(address).arg(port);
     QString connectionString = address;
     int error = ldap_initialize(&ld, connectionString.toAscii().data());
     if (error != LDAP_SUCCESS) {
@@ -55,5 +53,54 @@ bool LdapHelper::connect() {
 }
 
 void LdapHelper::disconnect() {
-    ldap_unbind_s(ld);
+    ldap_unbind_ext(ld, NULL, NULL);
+}
+
+QString LdapHelper::getUserFromIButton(QString id) {
+    LDAPMessage *res;
+
+    char *attr[2];
+    attr[0] = (char *)"uid";
+    attr[1] = NULL;
+
+    struct timeval time;
+    time.tv_sec = 2;
+    time.tv_usec = 0;
+
+    qDebug() << "Checking" << id;
+
+    int error = ldap_search_ext_s(ld, "ou=Users,dc=csh,dc=rit,dc=edu", LDAP_SCOPE_SUBTREE,
+                                  QString("(&(objectClass=ibuttonUser)(ibutton=%1))").arg(id).toAscii().data(),
+                                  attr, 0, NULL, NULL, &time, 100, &res);
+
+
+    if (error != LDAP_SUCCESS) {
+        if (error == LDAP_FILTER_ERROR) {
+            errString = "Invalid iButton ID";
+            return "";
+        }
+
+        QMessageBox::critical(0, "openLDAP", QString("Failed to query iButton (error: %1)").arg(error));
+        return "";
+    }
+
+    if (ldap_count_entries(ld, res) > 0) {
+        res = ldap_first_entry(ld, res);
+
+        struct berval *value = *ldap_get_values_len(ld, res, "uid");
+
+        QString user = value->bv_val;
+        //ldap_value_free_len(&value);
+        qDebug() << "Found" << user;
+
+        return user;
+    }
+
+    qDebug() << "Invalid iButton ID";
+
+    return "";
+}
+
+QString LdapHelper::getLastError() {
+    return errString;
 }

@@ -20,11 +20,13 @@ CONFIG += qt \
 SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/itembutton.cpp \
-    src/ldaphelper.cpp
+    src/ldaphelper.cpp \
+    src/ibuttonhelper.cpp
 
 HEADERS  += src/mainwindow.h \
     src/itembutton.h \
-    src/ldaphelper.h
+    src/ldaphelper.h \
+    src/ibuttonhelper.h
 
 QMAKE_LFLAGS += -lldap
-QMAKE_CXXFLAGS += -DLDAP_DEPRECATED
+#QMAKE_CXXFLAGS += -DLDAP_DEPRECATED

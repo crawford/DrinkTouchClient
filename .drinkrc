@@ -21,6 +21,7 @@ StyleSheet="#wgtSplash > QLabel {
 
 CredentialsFile=credentials
 LdapURI=ldap://ldap.csh.rit.edu
+IButtonFile=/tmp/ibutton
 
 [Drink]
  Type=Drink

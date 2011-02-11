@@ -20,6 +20,7 @@
 #define CONFIG_PORT_SUB    "/Port"
 #define CONFIG_CREDS       "CredentialsFile"
 #define CONFIG_LDAP_URI    "LdapURI"
+#define CONFIG_IBUTTON     "IButtonFile"
 #define CREDS_USER_DN      "UserDN"
 #define CREDS_PASSWORD     "Password"
 #define STAT_MESSAGE       "STAT\n"
@@ -40,11 +41,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QSettings creds(config->value(CONFIG_CREDS).toString(), QSettings::IniFormat, this);
     ldap = new LdapHelper(creds.value(CREDS_USER_DN).toString(), creds.value(CREDS_PASSWORD).toString(), config->value(CONFIG_LDAP_URI).toString());
 
+    ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
+    connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleIButton(QString)));
+    ibutton->start();
+
     delete config;
 }
 
 MainWindow::~MainWindow() {
-
+    ibutton->stop();
+    ibutton->wait(2000);
 }
 
 void MainWindow::setupUi() {
@@ -64,13 +70,14 @@ void MainWindow::setupUi() {
     btnLogout->setObjectName("btnLogout");
 
     sbrStatus->addWidget(prgLoading);
+    sbrStatus->hide();
     prgLoading->hide();
 
     wgtSplash->setLayout(new QBoxLayout(QBoxLayout::LeftToRight, wgtSplash));
     wgtSplash->layout()->addWidget(new QLabel("Touch iButton to continue...", wgtSplash));
-    QPushButton *button = new QPushButton("iButton", wgtSplash);
-    connect(button, SIGNAL(clicked()), this, SLOT(handleIButton()));
-    wgtSplash->layout()->addWidget(button);
+    //QPushButton *button = new QPushButton("iButton", wgtSplash);
+    //connect(button, SIGNAL(clicked()), this, SLOT(handleIButton()));
+    //wgtSplash->layout()->addWidget(button);
 
     tabServices->setCornerWidget(btnLogout);
     connect(btnLogout, SIGNAL(clicked()), this, SLOT(logout()));
@@ -126,10 +133,16 @@ void MainWindow::handleSslErrors(QNetworkReply *reply) {
     reply->ignoreSslErrors();
 }
 
-void MainWindow::handleIButton() {
+void MainWindow::handleIButton(QString id) {
     if (ldap->connect()) {
+        currentUser = ldap->getUserFromIButton(id);
         ldap->disconnect();
-        currentUser = "abcrawf";
+
+        if (currentUser == "") {
+            return;
+        }
+    } else {
+       return;
     }
 
     refreshStats();

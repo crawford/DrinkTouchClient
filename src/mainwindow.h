@@ -10,6 +10,7 @@
 #include <QByteArray>
 #include <QPushButton>
 #include "ldaphelper.h"
+#include "ibuttonhelper.h"
 
 namespace Ui {
     class mainWindow;
@@ -34,6 +35,7 @@ private:
     QMap<QString, QWidget *> *panels;
 
     LdapHelper *ldap;
+    IButtonHelper *ibutton;
     QString currentUser;
 
     void setupUi();
@@ -45,7 +47,7 @@ private:
 
 private slots:
     void handleSslErrors(QNetworkReply *);
-    void handleIButton();
+    void handleIButton(QString);
     void logout();
 };
 
