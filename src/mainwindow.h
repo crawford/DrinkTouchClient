@@ -9,6 +9,7 @@
 #include <QNetworkReply>
 #include <QByteArray>
 #include <QPushButton>
+#include <QLabel>
 #include "ldaphelper.h"
 #include "ibuttonhelper.h"
 
@@ -30,8 +31,9 @@ private:
     QWidget *wgtCentral;
     QWidget *wgtSplash;
     QPushButton *btnLogout;
+    QLabel *lblSplashStatus;
+    QLabel *lblSplashError;
 
-    QMap<QString, QSslSocket *> *connections;
     QMap<QString, QWidget *> *panels;
 
     LdapHelper *ldap;
@@ -40,10 +42,6 @@ private:
 
     void setupUi();
     void buildTabs(QSettings *);
-    void createConnections(QSettings *);
-    QByteArray waitForResponse(QSslSocket *);
-    void refreshStats();
-    void parseStats(QWidget *, QSslSocket *);
 
 private slots:
     void handleSslErrors(QNetworkReply *);

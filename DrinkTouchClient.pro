@@ -21,12 +21,14 @@ SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/itembutton.cpp \
     src/ldaphelper.cpp \
-    src/ibuttonhelper.cpp
+    src/ibuttonhelper.cpp \
+    src/drinkview.cpp
 
 HEADERS  += src/mainwindow.h \
     src/itembutton.h \
     src/ldaphelper.h \
-    src/ibuttonhelper.h
+    src/ibuttonhelper.h \
+    src/drinkview.h
 
 QMAKE_LFLAGS += -lldap
 #QMAKE_CXXFLAGS += -DLDAP_DEPRECATED

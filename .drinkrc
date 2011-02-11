@@ -1,7 +1,12 @@
-StyleSheet="#wgtSplash > QLabel {
+StyleSheet="#lblSplashStatus {
                 background-color:black;
                 color:gray;
                 font-size:30px;
+            }
+            #lblSplashError {
+                background-color:black;
+                color:#AA5555;
+                font-size:20px;
             }
             #wgtSplash {
                 background-color:black;

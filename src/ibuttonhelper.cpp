@@ -1,6 +1,8 @@
 #include "ibuttonhelper.h"
 #include <QDebug>
 
+#define UDPATE_INTERVAL 250
+
 IButtonHelper::IButtonHelper(QString filename, QObject *parent) : QThread(parent) {
     ibuttonFile = new QFile(filename, this);
     running = false;
@@ -11,10 +13,16 @@ void IButtonHelper::run() {
     running = true;
 
     while (running) {
-        QString id = ibuttonFile->readLine().trimmed();
+        QString id;
+
+        if (ibuttonFile->isOpen()) {
+            id = ibuttonFile->readLine().trimmed();
+        } else {
+            ibuttonFile->open(QFile::ReadOnly);
+        }
 
         if (id.isEmpty()) {
-            sleep(1);
+            usleep(UDPATE_INTERVAL);
             continue;
         }
 
@@ -24,6 +32,8 @@ void IButtonHelper::run() {
         ibuttonFile->write("");
         ibuttonFile->close();
         ibuttonFile->open(QFile::ReadOnly);
+
+        qDebug() << "Read iButton" << id;
 
         emit newIButton(id);
     }
