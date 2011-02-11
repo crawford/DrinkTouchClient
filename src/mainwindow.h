@@ -9,9 +9,10 @@
 #include <QNetworkReply>
 #include <QByteArray>
 #include <QPushButton>
+#include "ldaphelper.h"
 
 namespace Ui {
-	class mainWindow;
+    class mainWindow;
 }
 
 class MainWindow : public QMainWindow {
@@ -22,27 +23,30 @@ public:
     ~MainWindow();
 
 private:
-        QTabWidget *tabServices;
-	QStatusBar *sbrStatus;
-	QProgressBar *prgLoading;
-        QWidget *wgtCentral;
-        QWidget *wgtSplash;
-        QPushButton *btnLogout;
+    QTabWidget *tabServices;
+    QStatusBar *sbrStatus;
+    QProgressBar *prgLoading;
+    QWidget *wgtCentral;
+    QWidget *wgtSplash;
+    QPushButton *btnLogout;
 
-        QMap<QString, QSslSocket *> *connections;
-        QMap<QString, QWidget *> *panels;
+    QMap<QString, QSslSocket *> *connections;
+    QMap<QString, QWidget *> *panels;
 
-	void setupUi();
-	void buildTabs(QSettings *);
-	void createConnections(QSettings *);
-        QByteArray waitForResponse(QSslSocket *);
-        void refreshStats();
-        void parseStats(QWidget *, QSslSocket *);
+    LdapHelper *ldap;
+    QString currentUser;
 
- private slots:
-        void handleSslErrors(QNetworkReply *);
-        void handleIButton();
-        void logout();
+    void setupUi();
+    void buildTabs(QSettings *);
+    void createConnections(QSettings *);
+    QByteArray waitForResponse(QSslSocket *);
+    void refreshStats();
+    void parseStats(QWidget *, QSslSocket *);
+
+private slots:
+    void handleSslErrors(QNetworkReply *);
+    void handleIButton();
+    void logout();
 };
 
 #endif // MAINWINDOW_H

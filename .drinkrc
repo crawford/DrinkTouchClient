@@ -1,3 +1,27 @@
+StyleSheet="#wgtSplash > QLabel {
+                background-color:black;
+                color:gray;
+                font-size:30px;
+            }
+            #wgtSplash {
+                background-color:black;
+            }
+            QAbstractButton {
+                min-height:50px;
+                min-width:150px;
+            }
+            QTabBar::tab {
+                min-height:50px;
+                min-width:150px;
+            }
+            QWidget {
+                font-size:20px;
+            }
+            "
+
+CredentialsFile=credentials
+LdapURI=ldap://ldap.csh.rit.edu
+
 [Drink]
  Type=Drink
  Address=d.csh.rit.edu
@@ -15,4 +39,4 @@
 
 [Rideboard]
  Type=Web
- Address=https://members.csh.rit.edu/~mcg1sean/rideboard
+ Address=https://members.csh.rit.edu/~mcg1sean/rideboard/
