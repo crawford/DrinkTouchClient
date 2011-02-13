@@ -9,6 +9,7 @@ class IButtonHelper : public QThread
     Q_OBJECT
 public:
     explicit IButtonHelper(QString, QObject *parent = 0);
+    virtual void run();
 
 signals:
     void newIButton(QString);
@@ -20,7 +21,7 @@ private:
     QFile *ibuttonFile;
     bool running;
 
-    virtual void run();
+
 
 };
 

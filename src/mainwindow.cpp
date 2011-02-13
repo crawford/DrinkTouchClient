@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() {
     ibutton->stop();
-    ibutton->wait(2000);
+    ibutton->wait(6000);
 }
 
 void MainWindow::setupUi() {
