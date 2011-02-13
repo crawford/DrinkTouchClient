@@ -4,20 +4,20 @@ Drink Touch Client
 Dependancies
 ------------
 
-Qt SDK (currently using 2010.05.01 (4.7.0))
-INotify
+Qt SDK (currently using 2010.05.01 (4.7.0))  
+INotify  
 openLDAP
 
 Building
 --------
 
-Run qmake
+Run qmake  
 Run make
 
 Running
 -------
 
-Create 'credentials' and add UserDN and Password
+Create 'credentials' and add UserDN and Password  
 Run ./DrinkTouchClient .drinkrc
 
 Config
