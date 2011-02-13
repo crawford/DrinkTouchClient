@@ -1,7 +1,6 @@
 #include "ibuttonhelper.h"
 #include <QDebug>
 #include <QApplication>
-#include <signal.h>
 #include <sys/inotify.h>
 #include <errno.h>
 
@@ -46,6 +45,9 @@ void IButtonHelper::run() {
         ret = select(fd + 1, &rfds, NULL, NULL, &time);
 
         if (FD_ISSET (fd, &rfds)) {
+            //Clear the pending inotify events
+            read(fd, NULL, 100);
+
             QString id = ibuttonFile->readLine().trimmed();
 
             if (!id.isEmpty()) {

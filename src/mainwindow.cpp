@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 MainWindow::~MainWindow() {
     ibutton->stop();
+    qDebug() << "Waiting for ibutton thread to terminate";
     ibutton->wait(6000);
 }
 
