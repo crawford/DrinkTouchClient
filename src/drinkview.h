@@ -8,6 +8,7 @@ class DrinkView : public QWidget {
     Q_OBJECT
 public:
     explicit DrinkView(QString, int, QWidget *parent = 0);
+    int getCredits();
 
 signals:
 
@@ -18,9 +19,10 @@ private:
     QSslSocket *socket;
     QString host;
     int port;
+    int credits;
 
     void parseStats();
-    QByteArray waitForHello();
+    QByteArray waitForResponse();
     void reconnectSocket();
 
 };

@@ -172,7 +172,9 @@ void MainWindow::handleIButton(QString id) {
 
     foreach (QWidget *panel, panels->values()) {
         if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
-            ((DrinkView *)panel)->refresh();
+            DrinkView *view = (DrinkView *)panel;
+            view->refresh();
+            sbrStatus->showMessage(QString::number(view->getCredits()));
         } else if (panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {
             //Build the POST request
             QByteArray postData = ("username=" + currentUser).toAscii();
