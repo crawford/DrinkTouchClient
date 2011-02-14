@@ -97,6 +97,11 @@ void ItemButton::paintEvent(QPaintEvent *event) {
 
     int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
 
+    textWidth = fontMetrics.boundingRect(description).width();
+    if (width() - 2*margins.left() - iconWidth < textWidth) {
+        iconWidth = width() - 2*margins.left() - textWidth;
+    }
+
     //Draw icon
     if(isEnabled())
         p.drawPixmap(margins.left() + (iconWidth - iconSize().width())/2, (margins.height() - iconSize().height())/2 + margins.top(), icon().pixmap(iconSize(), QIcon::Normal));
@@ -113,7 +118,7 @@ void ItemButton::paintEvent(QPaintEvent *event) {
         p.setFont(font);
     }
 
-    p.drawText(QRect(margins.left()*2 + iconWidth, margins.top(), margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, text());
+    p.drawText(QRect(margins.left()*2 + iconWidth, margins.top(), margins.width() - iconWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, text());
 
     p.setFont(this->font());
 
@@ -130,6 +135,6 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     fontMetrics = QFontMetrics(p.font());
     textHeight = fontMetrics.boundingRect(description).height();
     textWidth = fontMetrics.boundingRect(description).width();
-    p.drawText(QRect(margins.left()*2 + iconWidth, margins.bottom() - textHeight, margins.width() - priceWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, description);
+    p.drawText(QRect(margins.left()*2 + iconWidth, margins.bottom() - textHeight, margins.width() - iconWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, description);
 }
 

@@ -19,6 +19,9 @@
 #define CONFIG_ADDRESS_SUB "/Address"
 #define CONFIG_PORT_SUB    "/Port"
 #define CONFIG_IBUTTON     "IButtonFile"
+#define CONFIG_SLOT_WIDTH  "/Layout/Width"
+#define CONFIG_SLOT_HEIGHT "/Layout/Height"
+#define CONFIG_SLOT_SIZES  "/Layout/Slots"
 #define SPLASH_INDEX       0
 #define SERVICES_INDEX     1
 #define PROP_TYPE          "dr_type"
@@ -105,7 +108,26 @@ void MainWindow::buildTabs(QSettings *settings) {
             QString host = settings->value(tab + CONFIG_ADDRESS_SUB).toString();
             int port = settings->value(tab + CONFIG_PORT_SUB).toInt();
 
-            DrinkView *view = new DrinkView(host, port, tabServices);
+            DrinkView *view;
+
+            if (settings->contains(tab + CONFIG_SLOT_WIDTH) &&
+                settings->contains(tab + CONFIG_SLOT_HEIGHT) &&
+                settings->contains(tab + CONFIG_SLOT_SIZES)) {
+
+                int width = settings->value(tab + CONFIG_SLOT_WIDTH).toInt();
+                int height = settings->value(tab + CONFIG_SLOT_HEIGHT).toInt();
+                QStringList strSizes = settings->value(tab + CONFIG_SLOT_SIZES).toString().split(',');
+                QList<int> sizes;
+
+                foreach (QString size, strSizes) {
+                    sizes.append(size.toInt());
+                }
+
+                view = new DrinkView(host, port, height, width, sizes, tabServices);
+            } else {
+                view = new DrinkView(host, port, tabServices);
+            }
+
             view->setProperty(PROP_TYPE, CONFIG_DRINK_TAG);
             connect(ibutton, SIGNAL(newIButton(QString)), view, SLOT(authenticate(QString)));
             connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));

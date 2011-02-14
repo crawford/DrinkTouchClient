@@ -13,15 +13,30 @@
 #define SOCKET_TIMEOUT     1000
 
 DrinkView::DrinkView(QString host, int port, QWidget *parent) : QWidget(parent) {
+    init(host, port);
+}
+
+DrinkView::DrinkView(QString host, int port, int height, int width, QList<int> sizes, QWidget *parent) : QWidget(parent) {
+    init(host, port);
+
+    slotsHeight = height;
+    slotsWidth = width;
+    slotSizes = sizes;
+}
+
+void DrinkView::init(QString host, int port) {
     setLayout(new QGridLayout(this));
     this->host = host;
     this->port = port;
 
     credits = 0;
     username = "";
+    slotsHeight = 0;
+    slotsWidth = 0;
 
     socket = new QSslSocket(this);
     reconnectSocket();
+
 }
 
 void DrinkView::authenticate(QString id) {
@@ -36,8 +51,6 @@ void DrinkView::authenticate(QString id) {
         qDebug() << username;
 
         emit hasUsername(username);
-
-        //refresh();
     } else {
         emit error(MSG_INVALID_ID);
     }
@@ -46,7 +59,6 @@ void DrinkView::authenticate(QString id) {
 void DrinkView::refresh() {
     socket->write(MSG_BALANCE);
     QString res = QString(waitForResponse());
-    qDebug() << res;
     if (res.left(2) == MSG_OK) {
         credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
     }
@@ -78,6 +90,7 @@ void DrinkView::parseStats() {
         if (line.mid(0, 2) == MSG_OK) {
             break;
         }
+        qDebug() << line;
         line.remove(0, line.indexOf('"') + 1);
         item = line.mid(0, line.indexOf('"'));
         line.remove(0, line.indexOf('"') + 2);
@@ -106,11 +119,24 @@ void DrinkView::parseStats() {
         slot++;
     }
 
-    double numCols = ceil(buttons.size() / PERFERRED_ROWS);
-    int numRows = (int)ceil(buttons.size() / numCols);
+    if (slotsWidth == 0) {
+        int numCols = ceil(buttons.size() / PERFERRED_ROWS);
 
-    for (int i = 0; i < buttons.size(); i++) {
-        ((QGridLayout *)layout())->addWidget(buttons.at(i), i % numRows, i / numRows);
+        for (int i = 0; i < buttons.size(); i++) {
+            ((QGridLayout *)layout())->addWidget(buttons.at(i), i / numCols, i % numCols);
+        }
+    } else {
+        int row = 0;
+        int col = 0;
+
+        for (int i = 0; i < buttons.size(); i++) {
+            ((QGridLayout *)layout())->addWidget(buttons.at(i), row, col, 1, slotSizes.at(i));
+            col += slotSizes.at(i);
+            if (col >= slotsWidth) {
+                row++;
+                col = 0;
+            }
+        }
     }
 }
 

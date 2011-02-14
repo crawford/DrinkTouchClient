@@ -38,6 +38,15 @@ IButtonFile=/tmp/ibutton
  Address=s.csh.rit.edu
  Port=4242
 
+[Snack/Layout]
+ Width=15
+ Height=5
+ Slots="5,  5,  5,
+        5,  5,  5,
+        5,  5,  5,
+        3,3,3,3,3,
+        3,3,3,3,3"
+
 #[Little Drink]
 # Type=Drink
 # Address=ld.csh.rit.edu
