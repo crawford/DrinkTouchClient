@@ -18,32 +18,23 @@
 #define CONFIG_TYPE_SUB    "/Type"
 #define CONFIG_ADDRESS_SUB "/Address"
 #define CONFIG_PORT_SUB    "/Port"
-#define CONFIG_CREDS       "CredentialsFile"
-#define CONFIG_LDAP_URI    "LdapURI"
 #define CONFIG_IBUTTON     "IButtonFile"
-#define CREDS_USER_DN      "UserDN"
-#define CREDS_PASSWORD     "Password"
 #define SPLASH_INDEX       0
 #define SERVICES_INDEX     1
 #define PROP_TYPE          "dr_type"
 #define PROP_DEFAULT_URL   "dr_url"
 #define MSG_TOUCH_IBUTTON  "Touch iButton to continue..."
 #define MSG_AUTHENTICATING "Authenticating iButton..."
-#define MSG_LDAP_FAILURE   "Cannot connect to LDAP. Try again later."
-#define MSG_INVALID_ID     "Invalid iButton. Try a different one."
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
 
+    ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
+    connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleNewIButton()));
+    ibutton->start();
+
     setupUi();
     buildTabs(config);
-
-    QSettings creds(config->value(CONFIG_CREDS).toString(), QSettings::IniFormat, this);
-    ldap = new LdapHelper(creds.value(CREDS_USER_DN).toString(), creds.value(CREDS_PASSWORD).toString(), config->value(CONFIG_LDAP_URI).toString());
-
-    ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
-    connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleIButton(QString)));
-    ibutton->start();
 
     delete config;
 }
@@ -116,6 +107,9 @@ void MainWindow::buildTabs(QSettings *settings) {
 
             DrinkView *view = new DrinkView(host, port, tabServices);
             view->setProperty(PROP_TYPE, CONFIG_DRINK_TAG);
+            connect(ibutton, SIGNAL(newIButton(QString)), view, SLOT(authenticate(QString)));
+            connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));
+            connect(view, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
 
             panels->insert(tab, view);
             tabServices->addTab(view, tab);
@@ -147,26 +141,34 @@ void MainWindow::handleSslErrors(QNetworkReply *reply) {
     reply->ignoreSslErrors();
 }
 
-void MainWindow::handleIButton(QString id) {
+void MainWindow::handleNewIButton() {
+    lblSplashStatus->setText(MSG_AUTHENTICATING);
+}
+
+void MainWindow::handleError(QString error) {
+    lblSplashStatus->setText(MSG_TOUCH_IBUTTON);
+    lblSplashError->setText(error);
+}
+
+void MainWindow::authenticated(QString username) {
     if (!currentUser.isEmpty()) {
         return;
     }
 
-    lblSplashStatus->setText(MSG_AUTHENTICATING);
-    lblSplashStatus->repaint();
-
-    if (ldap->connect()) {
-        currentUser = ldap->getUserFromIButton(id);
-        ldap->disconnect();
-    } else {
-        lblSplashStatus->setText(MSG_LDAP_FAILURE);
-        lblSplashError->setText(ldap->getLastError());
-        return;
+    //Make sure all of the drinkviews have auth'd
+    foreach (QWidget *panel, panels->values()) {
+        if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
+            if (!((DrinkView *)panel)->isAuthed()) {
+                return;
+            }
+        }
     }
 
+    currentUser = username;
+
     if (currentUser.isEmpty()){
-        lblSplashStatus->setText(MSG_INVALID_ID);
-        lblSplashError->setText(ldap->getLastError());
+        //Something went horribly wrong
+        qDebug() << "CURRENT USER IS EMPTY";
         return;
     }
 
@@ -174,7 +176,7 @@ void MainWindow::handleIButton(QString id) {
         if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
             DrinkView *view = (DrinkView *)panel;
             view->refresh();
-            sbrStatus->showMessage(QString::number(view->getCredits()));
+            sbrStatus->showMessage(QString("Credits: %1").arg(view->getCredits()));
         } else if (panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {
             //Build the POST request
             QByteArray postData = ("username=" + currentUser).toAscii();
@@ -193,6 +195,7 @@ void MainWindow::handleIButton(QString id) {
     ((QStackedLayout *)(wgtCentral->layout()))->setCurrentIndex(SERVICES_INDEX);
 
     lblSplashStatus->setText(MSG_TOUCH_IBUTTON);
+    lblSplashError->clear();
 }
 
 void MainWindow::logout() {

@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QFile>
+#include <QSslSocket>
 
 class IButtonHelper : public QThread
 {
@@ -20,9 +21,6 @@ public slots:
 private:
     QFile *ibuttonFile;
     bool running;
-
-
-
 };
 
 #endif // IBUTTONHELPER_H

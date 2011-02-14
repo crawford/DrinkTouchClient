@@ -6,6 +6,8 @@
 #define MSG_STAT           "STAT\n"
 #define MSG_BALANCE        "GETBALANCE\n"
 #define MSG_OK             "OK"
+#define MSG_WHOAMI         "WHOAMI\n"
+#define MSG_INVALID_ID     "Invalid iButton. Try a different one."
 #define PERFERRED_ROWS     6.0
 #define FONT_SIZE          20
 #define SOCKET_TIMEOUT     1000
@@ -15,13 +17,42 @@ DrinkView::DrinkView(QString host, int port, QWidget *parent) : QWidget(parent) 
     this->host = host;
     this->port = port;
 
-	credits = 0;
+    credits = 0;
+    username = "";
 
     socket = new QSslSocket(this);
     reconnectSocket();
 }
 
+void DrinkView::authenticate(QString id) {
+    socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
+    waitForResponse();
+
+    socket->write(MSG_WHOAMI);
+    QString res = QString(waitForResponse());
+
+    if (res.left(strlen(MSG_OK)) ==  MSG_OK) {
+        username = res.split(": ").at(1).trimmed();
+        qDebug() << username;
+
+        emit hasUsername(username);
+
+        //refresh();
+    } else {
+        emit error(MSG_INVALID_ID);
+    }
+}
+
 void DrinkView::refresh() {
+    socket->write(MSG_BALANCE);
+    QString res = QString(waitForResponse());
+    qDebug() << res;
+    if (res.left(2) == MSG_OK) {
+        credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
+    }
+
+
+
     QObjectList children = layout()->children();
 
     socket->write(MSG_STAT);
@@ -30,12 +61,6 @@ void DrinkView::refresh() {
             delete children.takeFirst();
         }
         parseStats();
-    }
-
-    socket->write(MSG_BALANCE);
-    QByteArray res = waitForResponse();
-    if (res.mid(0, 2) == MSG_OK) {
-        credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
     }
 }
 
@@ -113,4 +138,8 @@ void DrinkView::reconnectSocket() {
 
 int DrinkView::getCredits() {
     return credits;
+}
+
+bool DrinkView::isAuthed() {
+    return !username.isEmpty();
 }
