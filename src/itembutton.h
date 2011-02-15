@@ -11,24 +11,26 @@ class ItemButton : public QAbstractButton {
 
 public:
     ItemButton(QWidget *parent = 0);
-    ItemButton(QString nTitle, QString nDescription, QString nPrice, QIcon nIcon, QWidget *parent = 0);
+    ItemButton(QString nTitle, QString nDescription, QString nPrice, QIcon nIcon, int slot, QWidget *parent = 0);
     void setDescription(QString nDescription);
     QString getDescription();
     void setPrice(QString nPrice);
     QString getPrice();
-    bool isMarked();
+    int getSlot();
 
-public slots:
-    void mark();
-    void unmark();
+signals:
+    void clicked(ItemButton *);
 
 private:
     void paintEvent(QPaintEvent *event);
     int getMinSize();
+    int slot;
 
     QString description;
     QString price;
-    bool marked;
+
+private slots:
+    void handleClick();
 };
 
 #endif /*ITEMBUTTON_H_*/

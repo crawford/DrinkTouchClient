@@ -93,7 +93,8 @@ void MainWindow::setupUi() {
     setCentralWidget(wgtCentral);
     setStatusBar(sbrStatus);
 
-    resize(1024, 768);
+    //resize(1024, 768);
+    showFullScreen();
 }
 
 void MainWindow::buildTabs(QSettings *settings) {
@@ -132,6 +133,7 @@ void MainWindow::buildTabs(QSettings *settings) {
             connect(ibutton, SIGNAL(newIButton(QString)), view, SLOT(authenticate(QString)));
             connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));
             connect(view, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
+            connect(view, SIGNAL(dropped()), this, SLOT(logout()));
 
             panels->insert(tab, view);
             tabServices->addTab(view, tab);

@@ -1,6 +1,7 @@
 #include "drinkview.h"
-#include "itembutton.h"
 #include <QGridLayout>
+#include <QMessageBox>
+#include <QTimer>
 #include <math.h>
 
 #define MSG_STAT           "STAT\n"
@@ -29,6 +30,8 @@ void DrinkView::init(QString host, int port) {
     this->host = host;
     this->port = port;
 
+    msgbox = NULL;
+
     credits = 0;
     username = "";
     slotsHeight = 0;
@@ -36,7 +39,6 @@ void DrinkView::init(QString host, int port) {
 
     socket = new QSslSocket(this);
     reconnectSocket();
-
 }
 
 void DrinkView::authenticate(QString id) {
@@ -57,6 +59,10 @@ void DrinkView::authenticate(QString id) {
 }
 
 void DrinkView::refresh() {
+    if (msgbox) {
+        msgbox->close();
+    }
+
     socket->write(MSG_BALANCE);
     QString res = QString(waitForResponse());
     if (res.left(2) == MSG_OK) {
@@ -83,14 +89,13 @@ void DrinkView::parseStats() {
     QString count;
     QPixmap icon;
     QList<ItemButton *> buttons;
-    int slot = 0;
+    int slot = 1;
 
     while(!socket->atEnd()) {
         line = socket->readLine();
         if (line.mid(0, 2) == MSG_OK) {
             break;
         }
-        qDebug() << line;
         line.remove(0, line.indexOf('"') + 1);
         item = line.mid(0, line.indexOf('"'));
         line.remove(0, line.indexOf('"') + 2);
@@ -103,7 +108,7 @@ void DrinkView::parseStats() {
             icon = QPixmap("logos/default.png");
         }
 
-        ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), this);
+        ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), slot, this);
         QFont font = button->font();
         font.setPixelSize(FONT_SIZE);
         button->setFont(font);
@@ -111,8 +116,8 @@ void DrinkView::parseStats() {
             button->setEnabled(false);
         }
 
-        connect(button, SIGNAL(clicked()), button, SLOT(mark()));
-        //connect(button, SIGNAL(clicked()), this, SLOT(processClick()));
+        //connect(button, SIGNAL(clicked()), button, SLOT(mark()));
+        connect(button, SIGNAL(clicked(ItemButton*)), this, SLOT(handleClick(ItemButton*)));
 
         buttons.append(button);
 
@@ -168,4 +173,36 @@ int DrinkView::getCredits() {
 
 bool DrinkView::isAuthed() {
     return !username.isEmpty();
+}
+
+void DrinkView::handleClick(ItemButton *button) {
+    socket->write(QString("DROP %1 0\n").arg(button->getSlot()).toAscii());
+    QString res = waitForResponse().trimmed();
+
+    if (res != MSG_OK) {
+        if (msgbox) {
+            delete msgbox;
+        }
+
+        msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The drink could not be dropped (%1).").arg(res));
+        msgbox->show();
+    } else {
+        if (msgbox) {
+            delete msgbox;
+        }
+
+        msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your drink!", QMessageBox::NoButton, this);
+        msgbox->setStandardButtons(0);
+        msgbox->show();
+        repaint();
+
+        QTimer::singleShot(3000, this, SLOT(handleDropTimeout()));
+    }
+}
+
+void DrinkView::handleDropTimeout() {
+    msgbox->close();
+    delete msgbox;
+    msgbox = NULL;
+    emit dropped();
 }

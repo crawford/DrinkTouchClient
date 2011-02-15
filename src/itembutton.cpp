@@ -2,32 +2,34 @@
 #include <QStylePainter>
 #include <QStyleOptionButton>
 
-#include <QDebug>
-
 #define EDGE_MARGIN 20
 
 ItemButton::ItemButton(QWidget *parent) : QAbstractButton(parent) {
     description = "";
     price = "";
-    marked = false;
+    slot = 0;
 
     setContentsMargins(9, 9, 9, 9);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
 
     setMinimumHeight(getMinSize());
+
+    connect(this, SIGNAL(clicked()), this, SLOT(handleClick()));
 }
 
-ItemButton::ItemButton(QString nTitle, QString nDescription, QString nPrice, QIcon nIcon, QWidget *parent) : QAbstractButton(parent) {
+ItemButton::ItemButton(QString nTitle, QString nDescription, QString nPrice, QIcon nIcon, int slot, QWidget *parent) : QAbstractButton(parent) {
     setText(nTitle);
     description = nDescription;
     price = nPrice;
     setIcon(nIcon);
-    marked = false;
+    this->slot = slot;
 
     setContentsMargins(13, 13, 13, 13);
     setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     setMinimumHeight(getMinSize());
+
+    connect(this, SIGNAL(clicked()), this, SLOT(handleClick()));
 }
 
 int ItemButton::getMinSize() {
@@ -55,18 +57,6 @@ QString ItemButton::getPrice() {
     return price;
 }
 
-void ItemButton::mark() {
-    marked = true;
-}
-
-void ItemButton::unmark() {
-    marked = false;
-}
-
-bool ItemButton::isMarked() {
-    return marked;
-}
-
 void ItemButton::paintEvent(QPaintEvent *event) {
     QStylePainter p(this);
     QStyleOptionButton option;
@@ -75,6 +65,7 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     int textHeight = 0;
     int textWidth = 0;
     int priceWidth = fontMetrics.boundingRect(price).width();
+
 
     option.initFrom(this);
 
@@ -138,3 +129,10 @@ void ItemButton::paintEvent(QPaintEvent *event) {
     p.drawText(QRect(margins.left()*2 + iconWidth, margins.bottom() - textHeight, margins.width() - iconWidth, textHeight), Qt::AlignLeft|Qt::TextSingleLine, description);
 }
 
+void ItemButton::handleClick() {
+    emit clicked(this);
+}
+
+int ItemButton::getSlot() {
+    return slot;
+}

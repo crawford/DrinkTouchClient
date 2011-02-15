@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 
     QApplication a(argc, argv);
     MainWindow w;
+    w.setCursor(Qt::BlankCursor);
 
     QSettings *settings = new QSettings(qApp->arguments().at(1), QSettings::IniFormat);
     if (settings->contains("StyleSheet")) {

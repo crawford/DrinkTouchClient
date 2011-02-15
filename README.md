@@ -6,7 +6,6 @@ Dependancies
 
 Qt SDK (currently using 2010.05.01 (4.7.0))  
 INotify  
-openLDAP
 
 Building
 --------
@@ -17,7 +16,6 @@ Run make
 Running
 -------
 
-Create 'credentials' and add UserDN and Password  
 Run ./DrinkTouchClient .drinkrc
 
 Config

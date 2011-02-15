@@ -3,6 +3,8 @@
 
 #include <QWidget>
 #include <QSslSocket>
+#include <QMessageBox>
+#include "itembutton.h"
 
 class DrinkView : public QWidget {
     Q_OBJECT
@@ -15,6 +17,7 @@ public:
 signals:
     void hasUsername(QString);
     void error(QString);
+    void dropped();
 
 public slots:
     void refresh();
@@ -29,11 +32,16 @@ private:
     int slotsWidth;
     int slotsHeight;
     QList<int> slotSizes;
+    QMessageBox *msgbox;
 
     void init(QString, int);
     void parseStats();
     QByteArray waitForResponse();
     void reconnectSocket();
+
+private slots:
+    void handleClick(ItemButton *);
+    void handleDropTimeout();
 };
 
 #endif // DRINKVIEW_H

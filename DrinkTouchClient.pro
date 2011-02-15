@@ -28,5 +28,6 @@ HEADERS  += src/mainwindow.h \
     src/ibuttonhelper.h \
     src/drinkview.h
 
-QMAKE_LFLAGS += -lldap
+QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib/qt
+#QMAKE_LFLAGS += -lldap
 #QMAKE_CXXFLAGS += -DLDAP_DEPRECATED
