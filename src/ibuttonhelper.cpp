@@ -19,7 +19,7 @@ void IButtonHelper::run() {
     ibuttonFile->open(QFile::ReadOnly);
     running = true;
 
-    int fd = inotify_init();
+    /*int fd = inotify_init();
     if (fd < 0) {
         qDebug() << "inotify_init error";
     }
@@ -27,18 +27,38 @@ void IButtonHelper::run() {
     int wd = inotify_add_watch(fd, ibuttonFile->fileName().toAscii().data(), IN_MODIFY);
     if (wd < 0) {
         qDebug() << "inotify_add_watch error";
-    }
+    }*/
 
     while (running) {
+        QString id = ibuttonFile->readLine().trimmed();
+
+        if (!id.isEmpty()) {
+            //Clear the value in the file
+            ibuttonFile->close();
+            ibuttonFile->open(QFile::WriteOnly);
+            ibuttonFile->write("");
+            ibuttonFile->close();
+            ibuttonFile->open(QFile::ReadOnly);
+
+            qDebug() << "Read iButton" << id;
+
+            emit newIButton(id);
+        }
+
+        sleep(1);
+
+        /*
+        qDebug() << "Looping";
+
         struct timeval time;
         fd_set rfds;
         int ret;
 
-        /* timeout after five seconds */
+        // timeout after five seconds
         time.tv_sec = 5;
         time.tv_usec = 0;
 
-        /* zero-out the fd_set */
+        // zero-out the fd_set
         FD_ZERO(&rfds);
         FD_SET(fd, &rfds);
 
@@ -46,7 +66,7 @@ void IButtonHelper::run() {
 
         if (FD_ISSET (fd, &rfds)) {
             //Clear the pending inotify events
-            read(fd, NULL, 100);
+            printf("READING %d (error %d)\n", read(fd, NULL, 100), errno);
 
             QString id = ibuttonFile->readLine().trimmed();
 
@@ -63,9 +83,10 @@ void IButtonHelper::run() {
                 emit newIButton(id);
             }
         }
+        */
     }
 
-    close(fd);
+    //close(fd);
     ibuttonFile->close();
 }
 
