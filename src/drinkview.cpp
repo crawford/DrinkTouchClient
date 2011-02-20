@@ -1,8 +1,8 @@
 #include "drinkview.h"
 #include <QGridLayout>
-#include <QMessageBox>
 #include <QTimer>
 #include <math.h>
+#include <limits>
 
 #define MSG_STAT           "STAT\n"
 #define MSG_BALANCE        "GETBALANCE\n"
@@ -38,10 +38,12 @@ void DrinkView::init(QString host, int port) {
     slotsWidth = 0;
 
     socket = new QSslSocket(this);
-    reconnectSocket();
 }
 
 void DrinkView::authenticate(QString id) {
+    if (!reconnectSocket())
+        return;
+
     socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
     waitForResponse();
 
@@ -146,24 +148,26 @@ void DrinkView::parseStats() {
 }
 
 QByteArray DrinkView::waitForResponse() {
-    int bytes = -1;
-    do {
-        socket->waitForReadyRead(SOCKET_TIMEOUT);
-        if (socket->bytesAvailable() == -1) {
-            //QMessageBox::critical(this, "Communication Error", "No response from host.");
-            break;
-        } else {
-            bytes = socket->bytesAvailable();
-        }
-    } while(socket->peek(100).right(1) != "\n");
+    socket->waitForReadyRead(SOCKET_TIMEOUT);
+    if (socket->bytesAvailable() == -1) {
+        emit error(QString("No response from '%1'").arg(host));
+        return QByteArray();
+    }
 
-    return socket->readAll();
+    QByteArray received = socket->readAll();
+    qDebug() << "Received: " << received;
+
+    return received;
 }
 
-void DrinkView::reconnectSocket() {
+bool DrinkView::reconnectSocket() {
     socket->connectToHost(host, port);
     if (socket->waitForConnected(SOCKET_TIMEOUT)) {
         waitForResponse();
+        return true;
+    } else {
+        emit error(QString("Could not reconnect to '%1'").arg(host));
+        return false;
     }
 }
 

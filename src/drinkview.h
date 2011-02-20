@@ -37,7 +37,7 @@ private:
     void init(QString, int);
     void parseStats();
     QByteArray waitForResponse();
-    void reconnectSocket();
+    bool reconnectSocket();
 
 private slots:
     void handleClick(ItemButton *);
