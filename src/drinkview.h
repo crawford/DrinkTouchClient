@@ -22,6 +22,7 @@ signals:
 public slots:
     void refresh();
     void authenticate(QString);
+    void logout();
 
 private:
     QSslSocket *socket;

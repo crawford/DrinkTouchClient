@@ -134,6 +134,8 @@ void MainWindow::buildTabs(QSettings *settings) {
             connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));
             connect(view, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
             connect(view, SIGNAL(dropped()), this, SLOT(logout()));
+            connect(btnLogout, SIGNAL(clicked()), view, SLOT(logout()));
+            connect(view, SIGNAL(dropped()), view, SLOT(logout()));
 
             panels->insert(tab, view);
             tabServices->addTab(view, tab);

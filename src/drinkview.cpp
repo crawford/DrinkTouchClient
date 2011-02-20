@@ -60,6 +60,10 @@ void DrinkView::authenticate(QString id) {
     }
 }
 
+void DrinkView::logout() {
+    socket->disconnectFromHost();
+}
+
 void DrinkView::refresh() {
     if (msgbox) {
         msgbox->close();
