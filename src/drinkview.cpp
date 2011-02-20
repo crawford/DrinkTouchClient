@@ -181,26 +181,24 @@ bool DrinkView::isAuthed() {
 
 void DrinkView::handleClick(ItemButton *button) {
     socket->write(QString("DROP %1 0\n").arg(button->getSlot()).toAscii());
+
+    if (msgbox) {
+        delete msgbox;
+    }
+    msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your drink!", QMessageBox::NoButton, this);
+    msgbox->setStandardButtons(0);
+    msgbox->show();
+
     QString res = waitForResponse().trimmed();
 
     if (res != MSG_OK) {
-        if (msgbox) {
-            delete msgbox;
-        }
+        msgbox->close();
+        delete msgbox;
 
         msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The drink could not be dropped (%1).").arg(res));
         msgbox->show();
     } else {
-        if (msgbox) {
-            delete msgbox;
-        }
-
-        msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your drink!", QMessageBox::NoButton, this);
-        msgbox->setStandardButtons(0);
-        msgbox->show();
-        repaint();
-
-        QTimer::singleShot(3000, this, SLOT(handleDropTimeout()));
+        handleDropTimeout();
     }
 }
 
