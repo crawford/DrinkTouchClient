@@ -21,6 +21,7 @@ public slots:
 private:
     QFile *ibuttonFile;
     bool running;
+    QString curId;
 };
 
 #endif // IBUTTONHELPER_H

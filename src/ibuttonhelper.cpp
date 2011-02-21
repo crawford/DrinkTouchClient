@@ -7,6 +7,7 @@
 IButtonHelper::IButtonHelper(QString filename, QObject *parent) : QThread(parent) {
     ibuttonFile = new QFile(filename, this);
     running = false;
+    curId = "";
 }
 
 void IButtonHelper::run() {
@@ -32,7 +33,8 @@ void IButtonHelper::run() {
     while (running) {
         QString id = ibuttonFile->readLine().trimmed();
 
-        if (!id.isEmpty()) {
+        //if (!id.isEmpty()) {
+        if (!id.isEmpty() && id != curId) {
             //Clear the value in the file
             ibuttonFile->close();
             ibuttonFile->open(QFile::WriteOnly);
@@ -41,8 +43,11 @@ void IButtonHelper::run() {
             ibuttonFile->open(QFile::ReadOnly);
 
             qDebug() << "Read iButton" << id;
+            curId = id;
 
             emit newIButton(id);
+        } else if (id.isEmpty()) {
+            curId = "";
         }
 
         sleep(1);
