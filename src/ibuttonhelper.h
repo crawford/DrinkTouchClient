@@ -17,6 +17,7 @@ signals:
 
 public slots:
     void stop();
+    void clearIButton();
 
 private:
     QFile *ibuttonFile;

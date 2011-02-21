@@ -34,12 +34,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
     connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleNewIButton()));
-    ibutton->start();
 
     setupUi();
     buildTabs(config);
 
     delete config;
+
+    ibutton->start();
 }
 
 MainWindow::~MainWindow() {
@@ -256,4 +257,6 @@ void MainWindow::logout() {
             delete old;
         }
     }
+
+    ibutton->clearIButton();
 }
