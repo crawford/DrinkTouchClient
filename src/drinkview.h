@@ -37,7 +37,6 @@ private:
 
     void init(QString, int);
     void parseStats();
-    QByteArray waitForResponse();
     bool reconnectSocket();
 
 private slots:

@@ -203,6 +203,7 @@ void MainWindow::authenticated(QString username) {
         if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
             DrinkView *view = (DrinkView *)panel;
             view->refresh();
+            sbrStatus->clearMessage();
             sbrStatus->showMessage(QString("Credits: %1").arg(view->getCredits()));
         } else if (panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {
             //Build the POST request

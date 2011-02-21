@@ -17,6 +17,11 @@ void IButtonHelper::run() {
         ibuttonFile->close();
     }
 
+    //Clear out any old ibuttons
+    ibuttonFile->open(QFile::WriteOnly);
+    ibuttonFile->write("");
+    ibuttonFile->close();
+
     ibuttonFile->open(QFile::ReadOnly);
     running = true;
 
