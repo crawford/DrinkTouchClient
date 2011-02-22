@@ -12,7 +12,7 @@
 #define PERFERRED_ROWS     6.0
 #define FONT_SIZE          20
 #define SOCKET_TIMEOUT     1000
-#define DROP_TIMEOUT       5000
+#define DROP_TIMEOUT       10000
 
 DrinkView::DrinkView(QString host, int port, QWidget *parent) : QWidget(parent) {
     init(host, port);
@@ -212,7 +212,7 @@ void DrinkView::handleClick(ItemButton *button) {
     if (msgbox) {
         delete msgbox;
     }
-    msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your drink!", QMessageBox::NoButton, this);
+    msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your item!", QMessageBox::NoButton, this);
     msgbox->setStandardButtons(0);
     msgbox->show();
 
@@ -228,7 +228,7 @@ void DrinkView::handleClick(ItemButton *button) {
         msgbox->close();
         delete msgbox;
 
-        msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The drink could not be dropped (%1).").arg(res));
+        msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(res));
         msgbox->show();
     } else {
         handleDropTimeout();
