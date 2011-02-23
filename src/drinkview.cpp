@@ -181,6 +181,7 @@ void DrinkView::parseStats() {
 }
 
 bool DrinkView::reconnectSocket() {
+
     socket->connectToHost(host, port);
     if (socket->waitForConnected(SOCKET_TIMEOUT)) {
         if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {

@@ -135,8 +135,6 @@ void MainWindow::buildTabs(QSettings *settings) {
             connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));
             connect(view, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
             connect(view, SIGNAL(dropped()), this, SLOT(logout()));
-            connect(btnLogout, SIGNAL(clicked()), view, SLOT(logout()));
-            connect(view, SIGNAL(dropped()), view, SLOT(logout()));
 
             panels->insert(tab, view);
             tabServices->addTab(view, tab);
@@ -231,9 +229,9 @@ void MainWindow::logout() {
     ((QStackedLayout *)(wgtCentral->layout()))->setCurrentIndex(SPLASH_INDEX);
     currentUser.clear();
 
-    //Re-create the web instances
     foreach (QString key, panels->keys()) {
         if (panels->value(key)->property(PROP_TYPE) == CONFIG_WEB_TAG) {
+            //Re-create the web instances
             QUrl url = panels->value(key)->property(PROP_DEFAULT_URL).toUrl();
             QWebView *old = (QWebView *)(panels->value(key));
 
@@ -256,6 +254,9 @@ void MainWindow::logout() {
 
             (*panels)[key] = webview;
             delete old;
+        } else if (panels->value(key)->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
+            //Logout each of the drink views
+            ((DrinkView *)panels->value(key))->logout();
         }
     }
 
