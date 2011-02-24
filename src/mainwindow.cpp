@@ -173,6 +173,8 @@ void MainWindow::handleNewIButton() {
 void MainWindow::handleError(QString error) {
     lblSplashStatus->setText(MSG_TOUCH_IBUTTON);
     lblSplashError->setText(error);
+
+    logout();
 }
 
 void MainWindow::authenticated(QString username) {
