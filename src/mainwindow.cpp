@@ -204,7 +204,7 @@ void MainWindow::authenticated(QString username) {
             DrinkView *view = (DrinkView *)panel;
             view->refresh();
             sbrStatus->clearMessage();
-            sbrStatus->showMessage(QString("%1 (Credits: %2)").arg(currentUser).arg(view->arg(view->getCredits()));
+            sbrStatus->showMessage(QString("%1 (Credits: %2)").arg(currentUser).arg(view->getCredits()));
         } else if (panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {
             //Build the POST request
             QByteArray postData = ("username=" + currentUser).toAscii();
@@ -262,7 +262,7 @@ void MainWindow::logout() {
         }
 
 		//Release all of the panels
-		delete panel->value(key);
+		delete panels->value(key);
     }
 
     ibutton->clearIButton();
