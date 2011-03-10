@@ -260,9 +260,6 @@ void MainWindow::logout() {
             //Logout each of the drink views
             ((DrinkView *)panels->value(key))->logout();
         }
-
-		//Release all of the panels
-		delete panels->value(key);
     }
 
     ibutton->clearIButton();
