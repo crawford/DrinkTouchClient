@@ -34,6 +34,7 @@ private:
     int slotsHeight;
     QList<int> slotSizes;
     QMessageBox *msgbox;
+    QList<ItemButton *> *buttons;
 
     void init(QString, int);
     void parseStats();
