@@ -168,6 +168,7 @@ void MainWindow::handleSslErrors(QNetworkReply *reply) {
 
 void MainWindow::handleNewIButton() {
     lblSplashStatus->setText(MSG_AUTHENTICATING);
+	qDebug() << "Updated auth message";
 }
 
 void MainWindow::handleError(QString error) {
@@ -202,7 +203,7 @@ void MainWindow::authenticated(QString username) {
     foreach (QWidget *panel, panels->values()) {
         if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
             DrinkView *view = (DrinkView *)panel;
-            view->refresh();
+            view->reqRefresh();
             sbrStatus->clearMessage();
             sbrStatus->showMessage(QString("%1 (Credits: %2)").arg(currentUser).arg(view->getCredits()));
         } else if (panel->property(PROP_TYPE) == CONFIG_WEB_TAG) {

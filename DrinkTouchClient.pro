@@ -21,12 +21,14 @@ SOURCES += src/main.cpp\
         src/mainwindow.cpp \
     src/itembutton.cpp \
     src/ibuttonhelper.cpp \
-    src/drinkview.cpp
+    src/drinkview.cpp \
+    src/drinkviewhelper.cpp
 
 HEADERS  += src/mainwindow.h \
     src/itembutton.h \
     src/ibuttonhelper.h \
-    src/drinkview.h
+    src/drinkview.h \
+    src/drinkviewhelper.h
 
 QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib/qt
 #QMAKE_LFLAGS += -lldap

@@ -4,16 +4,6 @@
 #include <math.h>
 #include <limits>
 
-#define MSG_STAT           "STAT\n"
-#define MSG_BALANCE        "GETBALANCE\n"
-#define MSG_OK             "OK"
-#define MSG_WHOAMI         "WHOAMI\n"
-#define MSG_INVALID_ID     "Invalid iButton. Try a different one."
-#define PERFERRED_ROWS     6.0
-#define FONT_SIZE          20
-#define SOCKET_TIMEOUT     1000
-#define DROP_TIMEOUT       10000
-
 DrinkView::DrinkView(QString host, int port, QWidget *parent) : QWidget(parent) {
     init(host, port);
 }
@@ -39,84 +29,51 @@ void DrinkView::init(QString host, int port) {
     slotsHeight = 0;
     slotsWidth = 0;
 
-    socket = new QSslSocket(this);
+	helper = new DrinkViewHelper(this);
+	helper->start();
+
+	connect(this, SIGNAL(initAuth(QString)), helper, SLOT(authenticate(QString)));
+	connect(this, SIGNAL(initRefresh()), helper, SLOT(refresh()));
+	connect(this, SIGNAL(initDropItem(int)), helper, SLOT(dropItem(int)));
+	connect(helper, SIGNAL(hasRefreshed()), this, SLOT(refreshDisplay()));
+	connect(helper, SIGNAL(dropReturned(bool, QString)), this, SLOT(handleDropReturned(bool, QString)));
+}
+
+void DrinkView::reqRefresh() {
+	emit initRefresh();
 }
 
 void DrinkView::authenticate(QString id) {
-    if (!reconnectSocket())
-        return;
-
-    //Login to the drink server
-    socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
-    if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-        //Parse the user's drink credits
-        QString res = socket->readAll().trimmed();
-        if (res.left(2) == MSG_OK) {
-            credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
-        }
-
-        qDebug() << "Received: " << res;
-    } else {
-        qDebug() << "Timed out while logging in";
-        emit error("Network timeout");
-        return;
-    }
-
-    socket->write(MSG_WHOAMI);
-    QString res;
-    if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-        res = socket->readAll().trimmed();
-        qDebug() << "Received: " << res;
-    } else {
-        qDebug() << "Timed out while getting username";
-        emit error("Network timeout");
-        return;
-    }
-
-
-    if (res.left(strlen(MSG_OK)) ==  MSG_OK) {
-        username = res.split(": ").at(1).trimmed();
-        qDebug() << username;
-
-        emit hasUsername(username);
-    } else {
-        emit error(MSG_INVALID_ID);
-    }
+	emit initAuth(id);
 }
 
 void DrinkView::logout() {
-    socket->disconnectFromHost();
+	helper->disconnect();
     username = "";
 }
 
-void DrinkView::refresh() {
+void DrinkView::refreshDisplay() {
     if (msgbox) {
         msgbox->close();
     }
 
-    socket->write(MSG_STAT);
-    if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-        //Delete all of the buttons
-        while (!buttons->isEmpty()) {
-            delete buttons->takeFirst();
-        }
+	while (!buttons->isEmpty()) {
+		delete buttons->takeFirst();
+	}
 
-        parseStats();
-    } else {
-        qDebug() << "Timed out while waiting for stats";
-    }
+	parseStats();
 }
 
 void DrinkView::parseStats() {
-    QString line;
+    QStringList lines;
     QString item;
     QString price;
     QString count;
     QPixmap icon;
     int slot = 1;
 
-    while(!socket->atEnd()) {
-        line = socket->readLine();
+	lines = helper->buffer.split('\n');
+	foreach (QString line, lines) {
         if (line.mid(0, 2) == MSG_OK) {
             break;
         }
@@ -141,7 +98,6 @@ void DrinkView::parseStats() {
             button->setEnabled(false);
         }
 
-        //connect(button, SIGNAL(clicked()), button, SLOT(mark()));
         connect(button, SIGNAL(clicked(ItemButton*)), this, SLOT(handleClick(ItemButton*)));
 
         buttons->append(button);
@@ -170,25 +126,6 @@ void DrinkView::parseStats() {
     }
 }
 
-bool DrinkView::reconnectSocket() {
-
-    socket->connectToHost(host, port);
-    if (socket->waitForConnected(SOCKET_TIMEOUT)) {
-        if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-            qDebug() << "Received: " << socket->readAll().trimmed();
-            return true;
-        } else {
-            qDebug() << "Timed out while waiting for response after reconnect";
-            emit error(QString("Could not reconnect to '%1'").arg(host));
-            return false;
-        }
-    } else {
-        qDebug() << "Timed out while waiting for reconnect";
-        emit error(QString("Could not reconnect to '%1'").arg(host));
-        return false;
-    }
-}
-
 int DrinkView::getCredits() {
     return credits;
 }
@@ -198,7 +135,7 @@ bool DrinkView::isAuthed() {
 }
 
 void DrinkView::handleClick(ItemButton *button) {
-    socket->write(QString("DROP %1 0\n").arg(button->getSlot()).toAscii());
+	emit initDropItem(button->getSlot());
 
     if (msgbox) {
         delete msgbox;
@@ -206,29 +143,17 @@ void DrinkView::handleClick(ItemButton *button) {
     msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your item!", QMessageBox::NoButton, this);
     msgbox->setStandardButtons(0);
     msgbox->show();
-
-    QString res;
-    if (socket->waitForReadyRead(DROP_TIMEOUT)) {
-        res = socket->readAll().trimmed();
-        qDebug() << "Received: " << res;
-    } else {
-        qDebug() << "Drop timmed out";
-    }
-
-    if (res != MSG_OK) {
-        msgbox->close();
-        delete msgbox;
-
-        msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(res));
-        msgbox->show();
-    } else {
-        handleDropTimeout();
-    }
 }
 
-void DrinkView::handleDropTimeout() {
-    msgbox->close();
-    delete msgbox;
-    msgbox = NULL;
-    emit dropped();
+void DrinkView::handleDropReturned(bool success, QString error) {
+	msgbox->close();
+	delete msgbox;
+	msgbox = NULL;
+
+	if (success) {
+    	emit dropped();
+	} else {
+    	msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(error));
+	}
 }
+
