@@ -5,29 +5,29 @@
 #include <limits>
 
 DrinkView::DrinkView(QString host, int port, QWidget *parent) : QWidget(parent) {
-    init(host, port);
+	init(host, port);
 }
 
 DrinkView::DrinkView(QString host, int port, int height, int width, QList<int> sizes, QWidget *parent) : QWidget(parent) {
-    init(host, port);
+	init(host, port);
 
-    slotsHeight = height;
-    slotsWidth = width;
-    slotSizes = sizes;
+	slotsHeight = height;
+	slotsWidth = width;
+	slotSizes = sizes;
 }
 
 void DrinkView::init(QString host, int port) {
-    setLayout(new QGridLayout(this));
-    this->host = host;
-    this->port = port;
+	setLayout(new QGridLayout(this));
+	this->host = host;
+	this->port = port;
 
-    msgbox = NULL;
-    buttons = new QList<ItemButton *>();
+	msgbox = NULL;
+	buttons = new QList<ItemButton *>();
 
-    credits = 0;
-    username = "";
-    slotsHeight = 0;
-    slotsWidth = 0;
+	credits = 0;
+	username = "";
+	slotsHeight = 0;
+	slotsWidth = 0;
 
 	helper = new DrinkViewHelper(this);
 	helper->start();
@@ -49,13 +49,13 @@ void DrinkView::authenticate(QString id) {
 
 void DrinkView::logout() {
 	helper->disconnect();
-    username = "";
+	username = "";
 }
 
 void DrinkView::refreshDisplay() {
-    if (msgbox) {
-        msgbox->close();
-    }
+	if (msgbox) {
+		msgbox->close();
+	}
 
 	while (!buttons->isEmpty()) {
 		delete buttons->takeFirst();
@@ -65,84 +65,84 @@ void DrinkView::refreshDisplay() {
 }
 
 void DrinkView::parseStats() {
-    QStringList lines;
-    QString item;
-    QString price;
-    QString count;
-    QPixmap icon;
-    int slot = 1;
+	QStringList lines;
+	QString item;
+	QString price;
+	QString count;
+	QPixmap icon;
+	int slot = 1;
 
 	lines = helper->buffer.split('\n');
 	foreach (QString line, lines) {
-        if (line.mid(0, 2) == MSG_OK) {
-            break;
-        }
-        line.remove(0, line.indexOf('"') + 1);
-        item = line.mid(0, line.indexOf('"'));
-        line.remove(0, line.indexOf('"') + 2);
-        price = line.mid(0, line.indexOf(' '));
-        line.remove(0, line.indexOf(' ') + 1);
-        count = line.mid(0, line.indexOf(' '));
+		if (line.mid(0, 2) == MSG_OK) {
+			break;
+		}
+		line.remove(0, line.indexOf('"') + 1);
+		item = line.mid(0, line.indexOf('"'));
+		line.remove(0, line.indexOf('"') + 2);
+		price = line.mid(0, line.indexOf(' '));
+		line.remove(0, line.indexOf(' ') + 1);
+		count = line.mid(0, line.indexOf(' '));
 
-        icon = QPixmap("logos/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
-        if (icon.isNull()) {
-            icon = QPixmap("logos/default.png");
-        }
+		icon = QPixmap("logos/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
+		if (icon.isNull()) {
+			icon = QPixmap("logos/default.png");
+		}
 
-        ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), slot, this);
+		ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), slot, this);
 
-        QFont font = button->font();
-        font.setPixelSize(FONT_SIZE);
-        button->setFont(font);
-        if (count == "0" || price.toInt() > credits) {
-            button->setEnabled(false);
-        }
+		QFont font = button->font();
+		font.setPixelSize(FONT_SIZE);
+		button->setFont(font);
+		if (count == "0" || price.toInt() > credits) {
+			button->setEnabled(false);
+		}
 
-        connect(button, SIGNAL(clicked(ItemButton*)), this, SLOT(handleClick(ItemButton*)));
+		connect(button, SIGNAL(clicked(ItemButton*)), this, SLOT(handleClick(ItemButton*)));
 
-        buttons->append(button);
+		buttons->append(button);
 
-        slot++;
-    }
+		slot++;
+	}
 
-    if (slotsWidth == 0) {
-        int numCols = ceil(buttons->size() / PERFERRED_ROWS);
+	if (slotsWidth == 0) {
+		int numCols = ceil(buttons->size() / PERFERRED_ROWS);
 
-        for (int i = 0; i < buttons->size(); i++) {
-            ((QGridLayout *)layout())->addWidget(buttons->at(i), i / numCols, i % numCols);
-        }
-    } else {
-        int row = 0;
-        int col = 0;
+		for (int i = 0; i < buttons->size(); i++) {
+			((QGridLayout *)layout())->addWidget(buttons->at(i), i / numCols, i % numCols);
+		}
+	} else {
+		int row = 0;
+		int col = 0;
 
-        for (int i = 0; i < buttons->size(); i++) {
-            ((QGridLayout *)layout())->addWidget(buttons->at(i), row, col, 1, slotSizes.at(i));
-            col += slotSizes.at(i);
-            if (col >= slotsWidth) {
-                row++;
-                col = 0;
-            }
-        }
-    }
+		for (int i = 0; i < buttons->size(); i++) {
+			((QGridLayout *)layout())->addWidget(buttons->at(i), row, col, 1, slotSizes.at(i));
+			col += slotSizes.at(i);
+			if (col >= slotsWidth) {
+				row++;
+				col = 0;
+			}
+		}
+	}
 }
 
 int DrinkView::getCredits() {
-    return credits;
+	return credits;
 }
 
 bool DrinkView::isAuthed() {
-    return !username.isEmpty();
+	return !username.isEmpty();
 }
 
 void DrinkView::handleClick(ItemButton *button) {
 	emit initDropItem(button->getSlot());
 
-    if (msgbox) {
-        delete msgbox;
-    }
-    msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your item!", QMessageBox::NoButton, this);
-    msgbox->setStandardButtons(0);
-    msgbox->show();
+	if (msgbox) {
+		delete msgbox;
+	}
+	msgbox = new QMessageBox(QMessageBox::Information, "Dropping", "Dropping your item!", QMessageBox::NoButton, this);
+	msgbox->setStandardButtons(0);
+	msgbox->show();
 }
 
 void DrinkView::handleDropReturned(bool success, QString error) {
@@ -151,9 +151,9 @@ void DrinkView::handleDropReturned(bool success, QString error) {
 	msgbox = NULL;
 
 	if (success) {
-    	emit dropped();
+		emit dropped();
 	} else {
-    	msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(error));
+		msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(error));
 	}
 }
 

@@ -19,28 +19,28 @@ class DrinkView;
 class DrinkViewHelper : public QThread {
 	Q_OBJECT
 
-public:
-	DrinkViewHelper(DrinkView *);
-	bool reconnectSocket();
-	void disconnect();
+	public:
+		DrinkViewHelper(DrinkView *);
+		bool reconnectSocket();
+		void disconnect();
 
-	QString buffer;
+		QString buffer;
 
-public slots:
-	void authenticate(QString);
-	void dropItem(int);
-	void refresh();
+	public slots:
+		void authenticate(QString);
+		void dropItem(int);
+		void refresh();
 
-signals:
-	void hasRefreshed();
-	void dropReturned(bool, QString);
+	signals:
+		void hasRefreshed();
+		void dropReturned(bool, QString);
 
-protected:
-	void run();
+	protected:
+		void run();
 
-private:
-	DrinkView *parent;
-    QSslSocket *socket;
+	private:
+		DrinkView *parent;
+		QSslSocket *socket;
 };
 
 #endif // DRINKVIEWHELPER_H

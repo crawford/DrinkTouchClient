@@ -5,24 +5,25 @@
 #include <QFile>
 #include <QSslSocket>
 
-class IButtonHelper : public QThread
-{
-    Q_OBJECT
-public:
-    explicit IButtonHelper(QString, QObject *parent = 0);
-    virtual void run();
+class IButtonHelper : public QThread {
+	Q_OBJECT
 
-signals:
-    void newIButton(QString);
+	public:
+		explicit IButtonHelper(QString, QObject *parent = 0);
+		virtual void run();
 
-public slots:
-    void stop();
-    void clearIButton();
+	signals:
+		void newIButton(QString);
 
-private:
-    QFile *ibuttonFile;
-    bool running;
-    QString curId;
+	public slots:
+		void stop();
+		void clearIButton();
+
+	private:
+		QFile *ibuttonFile;
+		bool running;
+		QString curId;
 };
 
 #endif // IBUTTONHELPER_H
+
