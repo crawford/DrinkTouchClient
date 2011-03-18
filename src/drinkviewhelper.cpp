@@ -1,5 +1,7 @@
 #include "drinkviewhelper.h"
 
+#define DEBUG 0
+
 DrinkViewHelper::DrinkViewHelper(DrinkView *parent) : QThread(0) {
 	this->parent = parent;	
 
@@ -12,7 +14,9 @@ void DrinkViewHelper::run() {
 }
 
 void DrinkViewHelper::refresh() {
+#if DEBUG
 	qDebug() << "Sending: '" << MSG_STAT << "'";
+#endif
     socket->write(MSG_STAT);
     if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
 		buffer = socket->readAll();
@@ -28,7 +32,9 @@ void DrinkViewHelper::authenticate(QString id) {
         return;
 
     //Login to the drink server
+#if DEBUG
 	qDebug() << "Sending: '" << QString("ibutton %1\n").arg(id).toAscii().data() << "'";
+#endif
     socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
     if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
         //Parse the user's drink credits
@@ -44,7 +50,9 @@ void DrinkViewHelper::authenticate(QString id) {
         return;
     }
 
+#if DEBUG
 	qDebug() << "Sending: '" << MSG_WHOAMI << "'";
+#endif
     socket->write(MSG_WHOAMI);
     QString res;
     if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
@@ -89,7 +97,9 @@ bool DrinkViewHelper::reconnectSocket() {
 }
 
 void DrinkViewHelper::dropItem(int slot) {
+#if DEBUG
 	qDebug() << "Sending: '" << QString("DROP %1 0\n").arg(slot).toAscii() << "'";
+#endif
 	socket->write(QString("DROP %1 0\n").arg(slot).toAscii());
 
 	if (socket->waitForReadyRead(DROP_TIMEOUT)) {
