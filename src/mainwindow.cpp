@@ -30,10 +30,11 @@
 #define MSG_AUTHENTICATING "Authenticating iButton..."
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+	authenticating = false;
 	QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
 
 	ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
-	connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleNewIButton()));
+	connect(ibutton, SIGNAL(newIButton(QString)), this, SLOT(handleNewIButton(QString)));
 
 	setupUi();
 	buildTabs(config);
@@ -131,7 +132,7 @@ void MainWindow::buildTabs(QSettings *settings) {
 			}
 
 			view->setProperty(PROP_TYPE, CONFIG_DRINK_TAG);
-			connect(ibutton, SIGNAL(newIButton(QString)), view, SLOT(authenticate(QString)));
+			//connect(ibutton, SIGNAL(newIButton(QString)), view, SLOT(authenticate(QString)));
 			connect(view, SIGNAL(hasUsername(QString)), this, SLOT(authenticated(QString)));
 			connect(view, SIGNAL(error(QString)), this, SLOT(handleError(QString)));
 			connect(view, SIGNAL(dropped()), this, SLOT(logout()));
@@ -166,12 +167,29 @@ void MainWindow::handleSslErrors(QNetworkReply *reply) {
 	reply->ignoreSslErrors();
 }
 
-void MainWindow::handleNewIButton() {
-	lblSplashStatus->setText(MSG_AUTHENTICATING);
-	qDebug() << "Updated auth message";
+void MainWindow::handleNewIButton(QString ibutton) {
+	if (!authenticating) {
+		if (!currentUser.isEmpty()) {
+			qDebug() << "Already authenticated";
+			return;
+		}
+		authenticating = true;
+		lblSplashStatus->setText(MSG_AUTHENTICATING);
+		qDebug() << "Updated auth message";
+
+
+		foreach (QWidget *panel, panels->values()) {
+			if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
+				((DrinkView *)panel)->authenticate(ibutton);
+			}
+		}
+	} else {
+		qDebug() << "Already trying to authenticate...slow down";
+	}
 }
 
 void MainWindow::handleError(QString error) {
+	authenticating = false;
 	lblSplashStatus->setText(MSG_TOUCH_IBUTTON);
 	lblSplashError->setText(error);
 
@@ -193,6 +211,7 @@ void MainWindow::authenticated(QString username) {
 	}
 
 	currentUser = username;
+	authenticating = false;
 
 	if (currentUser.isEmpty()){
 		//Something went horribly wrong

@@ -37,13 +37,14 @@ class MainWindow : public QMainWindow {
 
 		IButtonHelper *ibutton;
 		QString currentUser;
+		bool authenticating;
 
 		void setupUi();
 		void buildTabs(QSettings *);
 
 	private slots:
 		void handleSslErrors(QNetworkReply *);
-		void handleNewIButton();
+		void handleNewIButton(QString);
 		void handleError(QString);
 		void authenticated(QString);
 		void logout();

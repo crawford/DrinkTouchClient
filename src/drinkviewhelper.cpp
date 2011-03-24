@@ -27,53 +27,53 @@ void DrinkViewHelper::refresh() {
 	}
 }
 
-	void DrinkViewHelper::authenticate(QString id) {
-		if (!reconnectSocket())
-			return;
+void DrinkViewHelper::authenticate(QString id) {
+	if (!reconnectSocket())
+		return;
 
-		//Login to the drink server
+	//Login to the drink server
 #if DEBUG
-		qDebug() << "Sending: '" << QString("ibutton %1\n").arg(id).toAscii().data() << "'";
+	qDebug() << "Sending: '" << QString("ibutton %1\n").arg(id).toAscii().data() << "'";
 #endif
-		socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
-		if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-			//Parse the user's drink credits
-			QString res = socket->readAll().trimmed();
-			if (res.left(2) == MSG_OK) {
-				parent->credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
-			}
-
-			qDebug() << "Received: " << res;
-		} else {
-			qDebug() << "Timed out while logging in";
-			parent->emit error("Network timeout");
-			return;
+	socket->write(QString("ibutton %1\n").arg(id).toAscii().data());
+	if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
+		//Parse the user's drink credits
+		QString res = socket->readAll().trimmed();
+		if (res.left(2) == MSG_OK) {
+			parent->credits = res.mid(res.indexOf(": ") + 2).trimmed().toInt();
 		}
 
-#if DEBUG
-		qDebug() << "Sending: '" << MSG_WHOAMI << "'";
-#endif
-		socket->write(MSG_WHOAMI);
-		QString res;
-		if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
-			res = socket->readAll().trimmed();
-			qDebug() << "Received: " << res;
-		} else {
-			qDebug() << "Timed out while getting username";
-			parent->emit error("Network timeout");
-			return;
-		}
-
-
-		if (res.left(strlen(MSG_OK)) ==  MSG_OK) {
-			parent->username = res.split(": ").at(1).trimmed();
-			qDebug() << parent->username;
-
-			parent->emit hasUsername(parent->username);
-		} else {
-			parent->emit error(MSG_INVALID_ID);
-		}
+		qDebug() << "Received: " << res;
+	} else {
+		qDebug() << "Timed out while logging in";
+		parent->emit error("Network timeout");
+		return;
 	}
+
+#if DEBUG
+	qDebug() << "Sending: '" << MSG_WHOAMI << "'";
+#endif
+	socket->write(MSG_WHOAMI);
+	QString res;
+	if (socket->waitForReadyRead(SOCKET_TIMEOUT)) {
+		res = socket->readAll().trimmed();
+		qDebug() << "Received: " << res;
+	} else {
+		qDebug() << "Timed out while getting username";
+		parent->emit error("Network timeout");
+		return;
+	}
+
+
+	if (res.left(strlen(MSG_OK)) ==  MSG_OK) {
+		parent->username = res.split(": ").at(1).trimmed();
+		qDebug() << parent->username;
+
+		parent->emit hasUsername(parent->username);
+	} else {
+		parent->emit error(MSG_INVALID_ID);
+	}
+}
 
 bool DrinkViewHelper::reconnectSocket() {
 	socket->connectToHost(parent->host, parent->port);
