@@ -157,6 +157,7 @@ void DrinkView::handleDropReturned(bool success, QString error) {
 		emit dropped();
 	} else {
 		msgbox = new QMessageBox(QMessageBox::Critical, "Drop Error", QString("The item could not be dropped (%1).").arg(error));
+		msgbox->show();
 	}
 }
 

@@ -106,6 +106,7 @@ void DrinkViewHelper::dropItem(int slot) {
 		if (buffer.left(2) == MSG_OK) {
 			emit dropReturned(true, "");
 		} else {
+			qDebug() << "Error while dropping (" << buffer.trimmed() << ")";
 			emit dropReturned(false, buffer.trimmed());
 		}
 	} else {
