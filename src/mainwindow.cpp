@@ -21,6 +21,7 @@
 #define CONFIG_IBUTTON        "IButtonFile"
 #define CONFIG_MONITOR_ON     "MonitorOnScript"
 #define CONFIG_MONITOR_OFF    "MonitorOffScript"
+#define CONFIG_MONITOR_TIME   "MonitorTimeout"
 #define CONFIG_ERROR_TIME     "ErrorTime"
 #define CONFIG_SESSION_TIME   "SessionTime"
 #define CONFIG_SLOT_WIDTH     "/Layout/Width"
@@ -34,9 +35,11 @@
 #define MSG_AUTHENTICATING    "Authenticating iButton..."
 #define D_ERROR_TIME          10000
 #define D_SESSION_TIME        60000
+#define D_MONITOR_TIME        300000
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	authenticating = false;
+	monitorOn = true;
 	qApp->installEventFilter(this);
 
 	QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
@@ -57,9 +60,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	sessionTimer->setSingleShot(true);
 	connect(sessionTimer, SIGNAL(timeout()), this, SLOT(logout()));
 
+	screenTimer = new QTimer(this);
+	screenTimer->setInterval(config->value(CONFIG_MONITOR_TIME, D_MONITOR_TIME).toInt());
+	screenTimer->setSingleShot(true);
+	connect(screenTimer, SIGNAL(timeout()), this, SLOT(turnOffMonitor()));
+
+	QString temp;
+
+	temp = config->value(CONFIG_MONITOR_ON).toString();
+	scriptOnFilename = (char *)malloc(temp.size() * sizeof(char));
+	strcpy(scriptOnFilename, temp.toAscii().constData());
+
+	temp = config->value(CONFIG_MONITOR_OFF).toString();
+	scriptOffFilename = (char *)malloc(temp.size() * sizeof(char));
+	strcpy(scriptOffFilename, temp.toAscii().constData());
+
 	delete config;
 
 	ibutton->start();
+	screenTimer->start();
 }
 
 MainWindow::~MainWindow() {
@@ -192,10 +211,11 @@ void MainWindow::handleNewIButton(QString ibutton) {
 			qDebug() << "Already authenticated";
 			return;
 		}
+
+		turnOnMonitor();
 		authenticating = true;
 		lblSplashStatus->setText(MSG_AUTHENTICATING);
 		qDebug() << "Updated auth message";
-
 
 		foreach (QWidget *panel, panels->values()) {
 			if (panel->property(PROP_TYPE) == CONFIG_DRINK_TAG) {
@@ -306,14 +326,51 @@ void MainWindow::logout() {
 	}
 
 	ibutton->clearIButton();
+	screenTimer->start();
 }
 
 void MainWindow::turnOnMonitor() {
+	if (monitorOn) {
+		return;
+	}
 
+	monitorOn = true;
+
+	int pid = fork();
+	switch(pid) {
+		case -1:
+			perror("fork()");
+			return;
+		case 0:
+			char *args[2];
+			args[0] = scriptOnFilename;
+			args[1] = NULL;
+
+			execvp(scriptOnFilename, args);
+			perror("exec()");
+	}
 }
 
 void MainWindow::turnOffMonitor() {
+	if (!monitorOn) {
+		return;
+	}
 
+	monitorOn = false;
+
+	int pid = fork();
+	switch(pid) {
+		case -1:
+			perror("fork()");
+			return;
+		case 0:
+			char *args[2];
+			args[0] = scriptOffFilename;
+			args[1] = NULL;
+
+			execvp(scriptOffFilename, args);
+			perror("exec()");
+	}
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {

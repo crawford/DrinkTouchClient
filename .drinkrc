@@ -26,8 +26,9 @@ StyleSheet="#lblSplashStatus {
 
 ErrorTime=10000
 SessionTime=60000
-MonitorOffScript=monitor_off.sh
-MonitorOnScript=monitor_on.sh
+MonitorOffScript="./monitor_off.sh"
+MonitorOnScript="./monitor_on.sh"
+MonitorTimeout=300000
 IButtonFile=/tmp/ibutton
 
 #[Drink]

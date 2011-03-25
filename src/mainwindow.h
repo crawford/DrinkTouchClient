@@ -42,6 +42,11 @@ class MainWindow : public QMainWindow {
 		QTimer *errorTimer;
 		QTimer *sessionTimer;
 
+		QTimer *screenTimer;
+		bool monitorOn;
+		char *scriptOnFilename;
+		char *scriptOffFilename;
+
 		void setupUi();
 		void buildTabs(QSettings *);
 		bool eventFilter(QObject *, QEvent *);
