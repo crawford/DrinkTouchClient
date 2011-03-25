@@ -90,8 +90,9 @@ void MainWindow::setupUi() {
 
 	lblSplashStatus->setAlignment(Qt::AlignCenter);
 	lblSplashError->setAlignment(Qt::AlignCenter);
+	prgLoading->setTextVisible(false);
 
-	sbrStatus->addWidget(prgLoading);
+	sbrStatus->addPermanentWidget(prgLoading);
 	sbrStatus->hide();
 	prgLoading->hide();
 
