@@ -16,7 +16,7 @@ StyleSheet="#lblSplashStatus {
                 min-width:150px;
             }
             QTabBar::tab {
-                min-height:50px;
+                min-height:56px;
                 min-width:150px;
             }
             QWidget {
@@ -24,34 +24,32 @@ StyleSheet="#lblSplashStatus {
             }
             "
 
-CredentialsFile=credentials
-LdapURI=ldap://ldap.csh.rit.edu
+ErrorTime=10000
+SessionTime=60000
+MonitorOffScript=monitor_off.sh
+MonitorOnScript=monitor_on.sh
 IButtonFile=/tmp/ibutton
 
-[Drink]
- Type=Drink
- Address=d.csh.rit.edu
- Port=4242
-
-[Snack]
- Type=Drink
- Address=s.csh.rit.edu
- Port=4242
-
-[Snack/Layout]
- Width=15
- Height=5
- Slots="5,  5,  5,
-        5,  5,  5,
-        5,  5,  5,
-        3,3,3,3,3,
-        3,3,3,3,3"
-
-#[Little Drink]
+#[Drink]
 # Type=Drink
-# Address=ld.csh.rit.edu
+# Address=d.csh.rit.edu
 # Port=4242
+#
+#[Snack]
+# Type=Drink
+# Address=s.csh.rit.edu
+# Port=4242
+#
+#[Snack/Layout]
+# Width=15
+# Height=5
+# Slots="5,  5,  5,
+#        5,  5,  5,
+#        5,  5,  5,
+#        3,3,3,3,3,
+#        3,3,3,3,3"
 
-[Rideboard]
- Type=Web
- Address=https://members.csh.rit.edu/~mcg1sean/rideboard/
+[Little Drink]
+ Type=Drink
+ Address=ld.csh.rit.edu
+ Port=4242

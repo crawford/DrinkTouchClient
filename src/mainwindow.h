@@ -10,6 +10,7 @@
 #include <QByteArray>
 #include <QPushButton>
 #include <QLabel>
+#include <QTimer>
 #include "ibuttonhelper.h"
 
 namespace Ui {
@@ -38,9 +39,12 @@ class MainWindow : public QMainWindow {
 		IButtonHelper *ibutton;
 		QString currentUser;
 		bool authenticating;
+		QTimer *errorTimer;
+		QTimer *sessionTimer;
 
 		void setupUi();
 		void buildTabs(QSettings *);
+		bool eventFilter(QObject *, QEvent *);
 
 	private slots:
 		void handleSslErrors(QNetworkReply *);
@@ -48,6 +52,8 @@ class MainWindow : public QMainWindow {
 		void handleError(QString);
 		void authenticated(QString);
 		void logout();
+		void turnOnMonitor();
+		void turnOffMonitor();
 };
 
 #endif // MAINWINDOW_H

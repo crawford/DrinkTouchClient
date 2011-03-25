@@ -13,24 +13,32 @@
 
 #include <QWebHistory>
 
-#define CONFIG_WEB_TAG     "web"
-#define CONFIG_DRINK_TAG   "drink"
-#define CONFIG_TYPE_SUB    "/Type"
-#define CONFIG_ADDRESS_SUB "/Address"
-#define CONFIG_PORT_SUB    "/Port"
-#define CONFIG_IBUTTON     "IButtonFile"
-#define CONFIG_SLOT_WIDTH  "/Layout/Width"
-#define CONFIG_SLOT_HEIGHT "/Layout/Height"
-#define CONFIG_SLOT_SIZES  "/Layout/Slots"
-#define SPLASH_INDEX       0
-#define SERVICES_INDEX     1
-#define PROP_TYPE          "dr_type"
-#define PROP_DEFAULT_URL   "dr_url"
-#define MSG_TOUCH_IBUTTON  "Touch iButton to continue..."
-#define MSG_AUTHENTICATING "Authenticating iButton..."
+#define CONFIG_WEB_TAG        "web"
+#define CONFIG_DRINK_TAG      "drink"
+#define CONFIG_TYPE_SUB       "/Type"
+#define CONFIG_ADDRESS_SUB    "/Address"
+#define CONFIG_PORT_SUB       "/Port"
+#define CONFIG_IBUTTON        "IButtonFile"
+#define CONFIG_MONITOR_ON     "MonitorOnScript"
+#define CONFIG_MONITOR_OFF    "MonitorOffScript"
+#define CONFIG_ERROR_TIME     "ErrorTime"
+#define CONFIG_SESSION_TIME   "SessionTime"
+#define CONFIG_SLOT_WIDTH     "/Layout/Width"
+#define CONFIG_SLOT_HEIGHT    "/Layout/Height"
+#define CONFIG_SLOT_SIZES     "/Layout/Slots"
+#define SPLASH_INDEX          0
+#define SERVICES_INDEX        1
+#define PROP_TYPE             "dr_type"
+#define PROP_DEFAULT_URL      "dr_url"
+#define MSG_TOUCH_IBUTTON     "Touch iButton to continue..."
+#define MSG_AUTHENTICATING    "Authenticating iButton..."
+#define D_ERROR_TIME          10000
+#define D_SESSION_TIME        60000
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	authenticating = false;
+	qApp->installEventFilter(this);
+
 	QSettings *config = new QSettings(qApp->arguments().at(1), QSettings::IniFormat, this);
 
 	ibutton = new IButtonHelper(config->value(CONFIG_IBUTTON).toString(), this);
@@ -38,6 +46,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	setupUi();
 	buildTabs(config);
+
+	errorTimer = new QTimer(this);
+	errorTimer->setInterval(config->value(CONFIG_ERROR_TIME, D_ERROR_TIME).toInt());
+	errorTimer->setSingleShot(true);
+	connect(errorTimer, SIGNAL(timeout()), lblSplashError, SLOT(clear()));
+
+	sessionTimer = new QTimer(this);
+	sessionTimer->setInterval(config->value(CONFIG_SESSION_TIME, D_SESSION_TIME).toInt());
+	sessionTimer->setSingleShot(true);
+	connect(sessionTimer, SIGNAL(timeout()), this, SLOT(logout()));
 
 	delete config;
 
@@ -194,6 +212,8 @@ void MainWindow::handleError(QString error) {
 	lblSplashError->setText(error);
 
 	logout();
+
+	errorTimer->start();
 }
 
 void MainWindow::authenticated(QString username) {
@@ -244,6 +264,8 @@ void MainWindow::authenticated(QString username) {
 
 	lblSplashStatus->setText(MSG_TOUCH_IBUTTON);
 	lblSplashError->clear();
+
+	sessionTimer->start();
 }
 
 void MainWindow::logout() {
@@ -283,5 +305,21 @@ void MainWindow::logout() {
 	}
 
 	ibutton->clearIButton();
+}
+
+void MainWindow::turnOnMonitor() {
+
+}
+
+void MainWindow::turnOffMonitor() {
+
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+	if (event->type() == QEvent::MouseButtonRelease) {
+		sessionTimer->start();
+	}
+
+	return false;
 }
 
