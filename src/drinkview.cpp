@@ -69,7 +69,6 @@ void DrinkView::parseStats() {
 	QString item;
 	QString price;
 	QString count;
-	QPixmap icon;
 	int slot = 1;
 
 	lines = helper->buffer.split('\n');
@@ -84,9 +83,13 @@ void DrinkView::parseStats() {
 		line.remove(0, line.indexOf(' ') + 1);
 		count = line.mid(0, line.indexOf(' '));
 
-		icon = QPixmap("logos/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
+		QPixmap icon("logos/" + item.toLower().replace(".", "").replace(" ", "") + ".png");
 		if (icon.isNull()) {
 			icon = QPixmap("logos/default.png");
+			if (icon.isNull()) {
+				icon = QPixmap(QSize(50, 50));
+				icon.fill(Qt::transparent);
+			}
 		}
 
 		ItemButton *button = new ItemButton(item, count + " Remaining", price + " credits", QIcon(icon), slot, this);
