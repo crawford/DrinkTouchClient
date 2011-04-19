@@ -78,7 +78,8 @@ void ItemButton::paintEvent(QPaintEvent *event) {
 	//Draw button
 	p.drawControl(QStyle::CE_PushButtonBevel, option);
 
-	int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
+	//int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
+	int iconWidth = iconSize().width();
 	textWidth = fontMetrics.boundingRect(description).width();
 	if (margins.right() - iconWidth < textWidth) {
 		iconWidth = margins.right() - textWidth;
@@ -86,11 +87,7 @@ void ItemButton::paintEvent(QPaintEvent *event) {
 
 	int iconHeight = margins.bottom();
 	QSize size = icon().availableSizes().first();
-	if (iconWidth < iconHeight) {
-		size.scale(iconWidth, iconWidth, Qt::KeepAspectRatio);
-	} else {
-		size.scale(iconHeight, iconHeight, Qt::KeepAspectRatio);
-	}
+	size.scale(iconWidth, iconHeight, Qt::KeepAspectRatio);
 	setIconSize(size);
 
 	//Draw icon
