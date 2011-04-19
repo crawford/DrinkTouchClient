@@ -1,6 +1,7 @@
 #include "itembutton.h"
 #include <QStylePainter>
 #include <QStyleOptionButton>
+#include <QDebug>
 
 ItemButton::ItemButton(QWidget *parent) : QAbstractButton(parent) {
 	description = "";
@@ -79,16 +80,21 @@ void ItemButton::paintEvent(QPaintEvent *event) {
 	p.drawControl(QStyle::CE_PushButtonBevel, option);
 
 	//int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
-	int iconWidth = iconSize().width();
+	int iconWidth = margins.right();
 	textWidth = fontMetrics.boundingRect(description).width();
 	if (margins.right() - iconWidth < textWidth) {
+		qDebug() << "Resizing";
 		iconWidth = margins.right() - textWidth;
 	}
 
 	int iconHeight = margins.bottom();
 	QSize size = icon().availableSizes().first();
+	if (iconWidth > iconHeight) {
+		iconWidth = iconHeight;
+	}
 	size.scale(iconWidth, iconHeight, Qt::KeepAspectRatio);
 	setIconSize(size);
+	qDebug() << size;
 
 	//Draw icon
 	if(isEnabled())
