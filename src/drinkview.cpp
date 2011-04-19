@@ -83,7 +83,7 @@ void DrinkView::parseStats() {
 		line.remove(0, line.indexOf(' ') + 1);
 		count = line.mid(0, line.indexOf(' '));
 
-		QPixmap icon("config/" + item.toLower().replace("'", "").replace(" ", "_") + ".png");
+		QPixmap icon("config/" + item.toLower().replace("'", "").replace(" ", "_").replace(".", "") + ".png");
 		if (icon.isNull()) {
 			icon = QPixmap("config/default.png");
 			if (icon.isNull()) {
