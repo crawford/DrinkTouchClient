@@ -2,8 +2,6 @@
 #include <QStylePainter>
 #include <QStyleOptionButton>
 
-#define EDGE_MARGIN 20
-
 ItemButton::ItemButton(QWidget *parent) : QAbstractButton(parent) {
 	description = "";
 	price = "";
@@ -80,18 +78,20 @@ void ItemButton::paintEvent(QPaintEvent *event) {
 	//Draw button
 	p.drawControl(QStyle::CE_PushButtonBevel, option);
 
-	int h = height() - EDGE_MARGIN;
-	//setIconSize(QSize(size, size));
-	QSize size = icon().availableSizes().first();
-	size.scale(h, h, Qt::KeepAspectRatio);
-	setIconSize(size);
-
 	int iconWidth = iconSize().height() > iconSize().width() ? iconSize().height() : iconSize().width();
-
 	textWidth = fontMetrics.boundingRect(description).width();
-	if (width() - 2*margins.left() - iconWidth < textWidth) {
-		iconWidth = width() - 2*margins.left() - textWidth;
+	if (margins.right() - iconWidth < textWidth) {
+		iconWidth = margins.right() - textWidth;
 	}
+
+	int iconHeight = margins.bottom();
+	QSize size = icon().availableSizes().first();
+	if (iconWidth < iconHeight) {
+		size.scale(iconWidth, iconWidth, Qt::KeepAspectRatio);
+	} else {
+		size.scale(iconHeight, iconHeight, Qt::KeepAspectRatio);
+	}
+	setIconSize(size);
 
 	//Draw icon
 	if(isEnabled())
