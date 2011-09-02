@@ -1,3 +1,5 @@
+#include <sys/wait.h>
+#include <assert.h>
 #include <QApplication>
 #include <QMessageBox>
 #include <QStackedLayout>
@@ -348,6 +350,16 @@ void MainWindow::turnOnMonitor() {
 
 			execvp(scriptOnFilename, args);
 			perror("exec()");
+			return;
+		default: {
+			pid_t npid;
+			if( (npid = waitpid(pid, NULL, 0)) == -1 ) {
+				perror("wait()");
+				exit(EXIT_FAILURE);
+			} else {
+				assert(npid == pid);
+			}
+		}
 	}
 }
 
@@ -358,7 +370,7 @@ void MainWindow::turnOffMonitor() {
 
 	monitorOn = false;
 
-	int pid = fork();
+	pid_t pid = fork();
 	switch(pid) {
 		case -1:
 			perror("fork()");
@@ -370,10 +382,21 @@ void MainWindow::turnOffMonitor() {
 
 			execvp(scriptOffFilename, args);
 			perror("exec()");
+			return;
+		default: {
+			pid_t npid;
+			if( (npid = waitpid(pid, NULL, 0)) == -1 ) {
+				perror("wait()");
+				exit(EXIT_FAILURE);
+			} else {
+				assert(npid == pid);
+			}
+		}
 	}
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+	(void) obj;
 	if (event->type() == QEvent::MouseButtonRelease) {
 		sessionTimer->start();
 	}
