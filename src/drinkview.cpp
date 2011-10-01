@@ -69,13 +69,14 @@ void DrinkView::parseStats() {
 	QString item;
 	QString price;
 	QString count;
-	int slot = 1;
+	int slot;
 
 	lines = helper->buffer.split('\n');
 	foreach (QString line, lines) {
 		if (line.mid(0, 2) == MSG_OK) {
 			break;
 		}
+		slot = line.mid(0, line.indexOf(' ')).toInt();
 		line.remove(0, line.indexOf('"') + 1);
 		item = line.mid(0, line.indexOf('"'));
 		line.remove(0, line.indexOf('"') + 2);
@@ -104,8 +105,6 @@ void DrinkView::parseStats() {
 		connect(button, SIGNAL(clicked(ItemButton*)), this, SLOT(handleClick(ItemButton*)));
 
 		buttons->append(button);
-
-		slot++;
 	}
 
 	if (slotsWidth == 0) {
