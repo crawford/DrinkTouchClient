@@ -70,6 +70,7 @@ void DrinkView::parseStats() {
 	QString price;
 	QString count;
 	int slot;
+	int enabled;
 
 	lines = helper->buffer.split('\n');
 	foreach (QString line, lines) {
@@ -83,6 +84,8 @@ void DrinkView::parseStats() {
 		price = line.mid(0, line.indexOf(' '));
 		line.remove(0, line.indexOf(' ') + 1);
 		count = line.mid(0, line.indexOf(' '));
+		line.remove(0, line.indexOf(' ') + 1);
+		enabled = line.mid(0, line.indexOf(' ')).toInt();
 
 		QPixmap icon("config/logos/" + item.toLower().replace("'", "").replace(" ", "_").replace(".", "") + ".png");
 		if (icon.isNull()) {
@@ -98,7 +101,7 @@ void DrinkView::parseStats() {
 		QFont font = button->font();
 		font.setPixelSize(FONT_SIZE);
 		button->setFont(font);
-		if (count == "0" || price.toInt() > credits) {
+		if (count == "0" || price.toInt() > credits || !enabled) {
 			button->setEnabled(false);
 		}
 
